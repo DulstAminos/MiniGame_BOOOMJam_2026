@@ -1,8 +1,8 @@
-using Cinemachine;
+ï»¿using Cinemachine;
 using UnityEngine;
 
-// ĞéÄâÏà»ú×Ô¶¯°ó¶¨½Å±¾
-// °ó¶¨ÄÚÈİ£º¸úËæ¶ÔÏó£¨Íæ¼Ò£©£¬¾µÍ·±ß½ç
+// è™šæ‹Ÿç›¸æœºè‡ªåŠ¨ç»‘å®šè„šæœ¬
+// ç»‘å®šå†…å®¹ï¼šè·Ÿéšå¯¹è±¡ï¼ˆç©å®¶ï¼‰ï¼Œé•œå¤´è¾¹ç•Œ
 public class CameraFollowSync : MonoBehaviour
 {
     private CinemachineVirtualCamera vcam;
@@ -14,14 +14,14 @@ public class CameraFollowSync : MonoBehaviour
 
     void Start()
     {
-        // ×Ô¶¯Ñ°ÕÒ²¢°ó¶¨Íæ¼Ò£¬Íæ¼ÒĞèÓĞ"Player"Tag
+        // è‡ªåŠ¨å¯»æ‰¾å¹¶ç»‘å®šç©å®¶ï¼Œç©å®¶éœ€æœ‰"Player"Tag
         GameObject player = GameObject.FindGameObjectWithTag("Player");
         if (player != null)
         {
             vcam.Follow = player.transform;
         }
 
-        // ×Ô¶¯Ñ°ÕÒ²¢°ó¶¨±ß½ç£¬±ß½çĞèÓĞ"Bounds"TagºÍPolygon Collider 2D
+        // è‡ªåŠ¨å¯»æ‰¾å¹¶ç»‘å®šè¾¹ç•Œï¼Œè¾¹ç•Œéœ€æœ‰"Bounds"Tagå’ŒPolygon Collider 2D
         GameObject bounds = GameObject.FindGameObjectWithTag("Bounds");
         if (bounds != null)
         {

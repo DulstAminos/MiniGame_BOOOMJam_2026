@@ -1,17 +1,17 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using UnityEngine.InputSystem;
 
 [RequireComponent(typeof(Rigidbody2D))]
 public class PlayerController : MonoBehaviour
 {
-    [Header("ÒÆ¶¯ÉèÖÃ")]
+    [Header("ç§»åŠ¨è®¾ç½®")]
     [SerializeField] private float moveSpeed = 8f;
     [SerializeField] private float jumpForce = 12f;
 
-    [Header("ÎïÀí¼ì²â")]
-    [SerializeField] private Transform groundCheck; // ÓÃÓÚ¼ì²âµØÃæµÄ¿ÕÎïÌå
+    [Header("ç‰©ç†æ£€æµ‹")]
+    [SerializeField] private Transform groundCheck; // ç”¨äºæ£€æµ‹åœ°é¢çš„ç©ºç‰©ä½“
     [SerializeField] private float checkRadius = 0.2f;
-    [SerializeField] private LayerMask groundLayer; // ĞèÒª¼ì²âµÄµØÃæLayer
+    [SerializeField] private LayerMask groundLayer; // éœ€è¦æ£€æµ‹çš„åœ°é¢Layer
 
     private Rigidbody2D rb;
     private Vector2 moveInput;
@@ -22,14 +22,14 @@ public class PlayerController : MonoBehaviour
         rb = GetComponent<Rigidbody2D>();
     }
 
-    // Input System µÄÏûÏ¢»Øµ÷
-    // ¶ÔÓ¦ Action Map ÀïµÄ Move
+    // Input System çš„æ¶ˆæ¯å›è°ƒ
+    // å¯¹åº” Action Map é‡Œçš„ Move
     public void OnMove(InputValue value)
     {
         moveInput = value.Get<Vector2>();
     }
 
-    // ¶ÔÓ¦ Action Map ÀïµÄ Jump
+    // å¯¹åº” Action Map é‡Œçš„ Jump
     public void OnJump(InputValue value)
     {
         if (value.isPressed && isGrounded)
@@ -40,18 +40,18 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        // ÂäµØ¼ì²â
+        // è½åœ°æ£€æµ‹
         isGrounded = Physics2D.OverlapCircle(groundCheck.position, checkRadius, groundLayer);
     }
 
     void FixedUpdate()
     {
-        // ×óÓÒÒÆ¶¯£¨Ö±½ÓĞŞ¸ÄËÙ¶È£©
+        // å·¦å³ç§»åŠ¨ï¼ˆç›´æ¥ä¿®æ”¹é€Ÿåº¦ï¼‰
         rb.velocity = new Vector2(moveInput.x * moveSpeed, rb.velocity.y);
     }
 
 #if UNITY_EDITOR
-    // ÔÚ±à¼­Æ÷Àï»­³ö¼ì²âÔ²È¦£¬·½±ãµ÷ÊÔ
+    // åœ¨ç¼–è¾‘å™¨é‡Œç”»å‡ºæ£€æµ‹åœ†åœˆï¼Œæ–¹ä¾¿è°ƒè¯•
     private void OnDrawGizmosSelected()
     {
         if (groundCheck != null)
