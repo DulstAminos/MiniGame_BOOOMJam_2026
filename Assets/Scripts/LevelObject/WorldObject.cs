@@ -21,7 +21,7 @@ public class WorldObject : MonoBehaviour
     // 获取物体的判定中心点（通常就是 Transform 位置，如果物体中心有偏移可以在这里修改）
     public Vector2 CenterPosition => transform.position;
 
-    private void Start()
+    protected virtual void Start()
     {
         // 向管理器注册自身
         if (LevelWorldManager.Instance != null)
@@ -36,7 +36,7 @@ public class WorldObject : MonoBehaviour
         CheckAndApplyState();
     }
 
-    private void OnDestroy()
+    protected virtual void OnDestroy()
     {
         // 销毁时清理引用和事件，防止内存泄漏
         if (LevelWorldManager.Instance != null)
@@ -57,28 +57,26 @@ public class WorldObject : MonoBehaviour
     /// <summary>
     /// 核心检测逻辑：只在必要时（事件触发或被区域覆盖时）被调用
     /// </summary>
-    public void CheckAndApplyState()
+    public virtual void CheckAndApplyState()
     {
-        // 询问管理器：基于物体现在的位置，其物理上处于哪个世界？
-        WorldType expectedWorld = LevelWorldManager.Instance.GetExpectedWorldAt(CenterPosition);
-
-        // 判断是否应该处于物理激活状态
-        // 如果我原生所属的世界 == 我理论上该处的世界，我就该激活。
-        bool shouldBePhysicallyActive = (SourceWorld == expectedWorld);
+        // 询问管理器：基于物体现在的位置，其视觉上应呈现哪个世界的状态
+        WorldType expectedWorldVisual = LevelWorldManager.Instance.GetVisualExpectedWorldAt(CenterPosition);
+        // 询问管理器：基于物体现在的位置，其物理上处于哪个世界
+        WorldType expectedWorldPhysical = LevelWorldManager.Instance.GetPhysicalExpectedWorldAt(CenterPosition);
 
         // 应用物理状态
-        ApplyPhysicsState(shouldBePhysicallyActive);
+        ApplyPhysicsState(SourceWorld == expectedWorldPhysical);
 
         // 应用视觉状态（目前预留，不阻碍后续 URP Stencil 的开发）
         // 在 URP Stencil 方案完成前，可以暂时用 SetActive 粗略控制显示，
         // 等 Stencil 写好后，这里可能只需要改变 Shader 的某些参数，或完全不需要操作
-        ApplyVisualState(shouldBePhysicallyActive);
+        ApplyVisualState(SourceWorld == expectedWorldVisual);
     }
 
     /// <summary>
     /// 处理物理层的显隐
     /// </summary>
-    private void ApplyPhysicsState(bool isActive)
+    protected virtual void ApplyPhysicsState(bool isActive)
     {
         if (PhysicsNode != null)
         {
@@ -93,7 +91,7 @@ public class WorldObject : MonoBehaviour
     /// <summary>
     /// 处理视觉层的表现 (预留给后续的 URP 渲染层开发)
     /// </summary>
-    private void ApplyVisualState(bool isActive)
+    protected virtual void ApplyVisualState(bool isActive)
     {
         if (VisualNode != null)
         {

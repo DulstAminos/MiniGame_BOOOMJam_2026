@@ -133,38 +133,53 @@ public class LevelWorldManager : MonoBehaviour
     }
 
     /// <summary>
-    /// 核心算法：根据空间位置，获取该位置理论上应该呈现的世界类型
+    /// 【物理层专用】只判定 AllSwitch 类型的区域。
+    /// 独有物体 (WorldObject) 用这个来决定是否开启物理。
+    /// </summary>
+    public WorldType GetPhysicalExpectedWorldAt(Vector2 position)
+    {
+        return GetWorldAtByZoneType(position, ZoneType.AllSwitch);
+    }
+
+    /// <summary>
+    /// 【视觉层专用】判定所有类型的区域（AllSwitch 和 PreviewOnly）。
+    /// 共享物体 (SharedWorldObject) 和独有物体的视觉层用这个来决定长什么样。
+    /// </summary>
+    public WorldType GetVisualExpectedWorldAt(Vector2 position)
+    {
+        return GetWorldAtByZoneType(position, null);
+    }
+
+    /// <summary>
+    /// 内部通用判定算法：根据空间位置，获取该位置理论上应该呈现的世界类型。
+    /// 可指定检测的部分区域类型
     /// </summary>
     /// <param name="position">物体的中心点坐标</param>
+    /// <param name="targetZoneType">需检测的部分区域类型，null表示不限制区域类型</param>
     /// <returns>该位置当前属于表世界还是里世界</returns>
-    public WorldType GetExpectedWorldAt(Vector2 position)
+    private WorldType GetWorldAtByZoneType(Vector2 position, ZoneType? targetZoneType)
     {
-        bool isInsidePhysicalZone = false;
+        bool isInsideZone = false;
 
         // 遍历所有的部分切换区域，检查点是否在区域内
-        // （由于2D圆的判定非常快，直接算距离平方即可，避免开方消耗性能）
         foreach (var zone in activePartialZones.Values)
         {
-            // 只关心 PhysicalSwitch 类型的区域
-            if (zone.Type != ZoneType.PhysicalSwitch) continue;
+            // 如果指定了类型，且当前区域类型不符，则跳过
+            if (targetZoneType.HasValue && zone.Type != targetZoneType.Value) continue;
 
             float sqrDistance = (position - zone.Center).sqrMagnitude;
             if (sqrDistance <= zone.Radius * zone.Radius)
             {
-                isInsidePhysicalZone = true;
-                break; // 只要在一个区域内，就被“替换”
+                isInsideZone = true;
+                break;
             }
         }
 
         // 如果在圈内，则是“相反的世界”；如果在圈外，则是“当前的主世界”
-        if (isInsidePhysicalZone)
-        {
+        if (isInsideZone)
             return CurrentActiveWorld == WorldType.Front ? WorldType.Back : WorldType.Front;
-        }
         else
-        {
             return CurrentActiveWorld;
-        }
     }
 
     /// <summary>
