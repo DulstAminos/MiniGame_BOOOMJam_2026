@@ -11,6 +11,15 @@ public enum WorldType
 }
 
 /// <summary>
+/// 区域功能类型
+/// </summary>
+public enum ZoneType
+{
+    PhysicalSwitch, // 物理部分切换（改变物理状态与视觉）
+    PreviewOnly     // 仅视觉预览（不改变物理状态）
+}
+
+/// <summary>
 /// 传递世界切换数据的事件参数
 /// </summary>
 public class WorldSwitchEventArgs : EventArgs
@@ -31,12 +40,14 @@ public class WorldSwitchEventArgs : EventArgs
 public class PartialZoneData
 {
     public int ID { get; private set; }      // 区域唯一ID（方便移除）
+    public ZoneType Type { get; private set; } // 区域类型
     public Vector2 Center { get; set; }      // 区域中心点
     public float Radius { get; set; }        // 区域半径
 
-    public PartialZoneData(int id, Vector2 center, float radius)
+    public PartialZoneData(int id, ZoneType type, Vector2 center, float radius)
     {
         ID = id;
+        Type = type;
         Center = center;
         Radius = radius;
     }
