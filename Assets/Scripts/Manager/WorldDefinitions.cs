@@ -15,7 +15,7 @@ public enum WorldType
 /// </summary>
 public enum ZoneType
 {
-    AllSwitch,      // 完全切换（改变物理状态与视觉）
+    AllSwitch,      // 完全替换（改变物理状态与视觉）
     PreviewOnly     // 仅视觉预览（不改变物理状态）
 }
 

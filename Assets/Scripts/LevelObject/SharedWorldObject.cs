@@ -9,12 +9,20 @@ public class SharedWorldObject : WorldObject
     [Header("Shared Object Specific")]
     [Tooltip("表世界的视觉节点")]
     public GameObject VisualNode_Front;
-
     [Tooltip("里世界的视觉节点")]
     public GameObject VisualNode_Back;
 
+    [Tooltip("表世界视觉节点的 Renderer")]
+    public Renderer Renderer_Front;
+    [Tooltip("里世界视觉节点的 Renderer")]
+    public Renderer Renderer_Back;
+
     protected override void Start()
     {
+        // 自动获取 Renderer
+        if (VisualNode_Front != null && Renderer_Front == null) Renderer_Front = VisualNode_Front.GetComponent<Renderer>();
+        if (VisualNode_Back != null && Renderer_Back == null) Renderer_Back = VisualNode_Back.GetComponent<Renderer>();
+
         // 对于共有物体，它的物理节点必须永远处于激活状态。
         // 所以在这里强制开启它，并脱离基类的物理控制逻辑。
         if (PhysicsNode != null)
@@ -31,38 +39,42 @@ public class SharedWorldObject : WorldObject
     /// </summary>
     public override void CheckAndApplyState()
     {
-        // 共有物体的物理永远不变，所以不需要调用 ApplyPhysicsState()。
+        WorldType activeWorld = LevelWorldManager.Instance.CurrentActiveWorld;
+        ZoneType? zoneIn = LevelWorldManager.Instance.GetHighestPriorityZoneAt(CenterPosition);
 
-        // 只关心在当前位置，视觉上应该呈现哪个世界的样子
-        WorldType expectedWorldVisual = LevelWorldManager.Instance.GetVisualExpectedWorldAt(CenterPosition);
+        // 无论如何，两个节点都要激活，交给 SpriteMask 去做像素级的裁剪
+        if (VisualNode_Front != null) VisualNode_Front.SetActive(true);
+        if (VisualNode_Back != null) VisualNode_Back.SetActive(true);
 
-        // 调用重写后的视觉处理方法
-        ApplyVisualStateForShared(expectedWorldVisual);
-    }
-
-    /// <summary>
-    /// 针对共有物体的视觉状态处理
-    /// </summary>
-    /// <param name="expectedWorld">该位置当前理论上的世界类型</param>
-    private void ApplyVisualStateForShared(WorldType expectedWorld)
-    {
-        // 如果理论世界是表世界，激活 Front 节点，隐藏 Back 节点
-        if (expectedWorld == WorldType.Front)
+        if (activeWorld == WorldType.Front)
         {
-            if (VisualNode_Front != null && !VisualNode_Front.activeSelf)
-                VisualNode_Front.SetActive(true);
-
-            if (VisualNode_Back != null && VisualNode_Back.activeSelf)
-                VisualNode_Back.SetActive(false);
+            // 当前是表世界：表贴图在外面，里贴图在遮罩里
+            SetupSharedNode(Renderer_Front, SpriteMaskInteraction.VisibleOutsideMask, zoneIn == ZoneType.PreviewOnly ? 0.5f : 1.0f, zoneIn == ZoneType.AllSwitch);
+            SetupSharedNode(Renderer_Back, SpriteMaskInteraction.VisibleInsideMask, zoneIn == ZoneType.PreviewOnly ? 0.5f : 1.0f, true);
         }
-        // 如果理论世界是里世界，激活 Back 节点，隐藏 Front 节点
         else
         {
-            if (VisualNode_Front != null && VisualNode_Front.activeSelf)
-                VisualNode_Front.SetActive(false);
+            // 当前是里世界：对称反转
+            SetupSharedNode(Renderer_Back, SpriteMaskInteraction.VisibleOutsideMask, zoneIn == ZoneType.PreviewOnly ? 0.5f : 1.0f, zoneIn == ZoneType.AllSwitch);
+            SetupSharedNode(Renderer_Front, SpriteMaskInteraction.VisibleInsideMask, zoneIn == ZoneType.PreviewOnly ? 0.5f : 1.0f, true);
+        }
+    }
 
-            if (VisualNode_Back != null && !VisualNode_Back.activeSelf)
-                VisualNode_Back.SetActive(true);
+    private void SetupSharedNode(Renderer r, SpriteMaskInteraction maskMode, float alpha, bool applyMask)
+    {
+        if (r == null) return;
+
+        // 如果不需要遮罩裁剪，则设为 None
+        if (r is SpriteRenderer sr)
+        {
+            sr.maskInteraction = applyMask ? maskMode : SpriteMaskInteraction.None;
+            Color c = sr.color; c.a = alpha; sr.color = c;
+        }
+        else if (r is UnityEngine.Tilemaps.TilemapRenderer tr)
+        {
+            tr.maskInteraction = applyMask ? maskMode : SpriteMaskInteraction.None;
+            var tm = tr.GetComponent<UnityEngine.Tilemaps.Tilemap>();
+            if (tm) { Color c = tm.color; c.a = alpha; tm.color = c; }
         }
     }
 

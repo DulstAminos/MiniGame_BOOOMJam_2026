@@ -187,7 +187,9 @@ public class LevelWorldManager : MonoBehaviour
     /// </summary>
     private void NotifyObjectsNearArea(Vector2 center, float radius)
     {
-        float sqrRadius = radius * radius;
+        float delta = 1f;  // 适当扩大通知范围
+        float r = radius + delta;
+        float sqrRadius = r * r;
         foreach (var obj in allWorldObjects)
         {
             // 使用平方距离计算，避免开方运算，提高性能
@@ -197,5 +199,33 @@ public class LevelWorldManager : MonoBehaviour
                 obj.CheckAndApplyState();
             }
         }
+    }
+
+    /// <summary>
+    /// 【视觉层专用】获取物体当前所在位置的最高优先级区域类型。
+    /// 返回 null 表示不在任何区域内（受大世界控制）。
+    /// </summary>
+    public ZoneType? GetHighestPriorityZoneAt(Vector2 position)
+    {
+        ZoneType? highestZone = null;
+
+        foreach (var zone in activePartialZones.Values)
+        {
+            float sqrDistance = (position - zone.Center).sqrMagnitude;
+            if (sqrDistance <= zone.Radius * zone.Radius)
+            {
+                // 如果是完全切换，优先级最高，直接返回
+                if (zone.Type == ZoneType.AllSwitch)
+                {
+                    return ZoneType.AllSwitch;
+                }
+                // 如果是预览区，先记录下来，继续找找看有没有物理区覆盖它
+                else if (zone.Type == ZoneType.PreviewOnly)
+                {
+                    highestZone = ZoneType.PreviewOnly;
+                }
+            }
+        }
+        return highestZone;
     }
 }

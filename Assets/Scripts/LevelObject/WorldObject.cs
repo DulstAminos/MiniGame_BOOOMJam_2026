@@ -18,11 +18,20 @@ public class WorldObject : MonoBehaviour
     [Tooltip("负责视觉的子物体（包含SpriteRenderer, Animator等）")]
     public GameObject VisualNode;
 
+    [Tooltip("视觉节点上的渲染器（SpriteRenderer 或 TilemapRenderer）")]
+    public Renderer VisualRenderer;
+
     // 获取物体的判定中心点（通常就是 Transform 位置，如果物体中心有偏移可以在这里修改）
     public Vector2 CenterPosition => transform.position;
 
     protected virtual void Start()
     {
+        // 自动获取 Renderer
+        if (VisualNode != null && VisualRenderer == null)
+        {
+            VisualRenderer = VisualNode.GetComponent<Renderer>();
+        }
+
         // 向管理器注册自身
         if (LevelWorldManager.Instance != null)
         {
@@ -67,9 +76,7 @@ public class WorldObject : MonoBehaviour
         // 应用物理状态
         ApplyPhysicsState(SourceWorld == expectedWorldPhysical);
 
-        // 应用视觉状态（目前预留，不阻碍后续 URP Stencil 的开发）
-        // 在 URP Stencil 方案完成前，可以暂时用 SetActive 粗略控制显示，
-        // 等 Stencil 写好后，这里可能只需要改变 Shader 的某些参数，或完全不需要操作
+        // 应用视觉状态
         ApplyVisualState(SourceWorld == expectedWorldVisual);
     }
 
@@ -89,17 +96,81 @@ public class WorldObject : MonoBehaviour
     }
 
     /// <summary>
-    /// 处理视觉层的表现 (预留给后续的 URP 渲染层开发)
+    /// 核心视觉表现逻辑
     /// </summary>
     protected virtual void ApplyVisualState(bool isActive)
     {
-        if (VisualNode != null)
+        if (VisualRenderer == null) return;
+
+        // 获取当前主世界
+        WorldType activeWorld = LevelWorldManager.Instance.CurrentActiveWorld;
+
+        // 获取物体当前所在的最高优先级区域类型
+        ZoneType? zoneIn = LevelWorldManager.Instance.GetHighestPriorityZoneAt(CenterPosition);
+
+        // === 核心对称渲染逻辑 ===
+        if (SourceWorld == activeWorld)
         {
-            // 【占位逻辑】在 URP 渲染方案完成前，暂且和物理保持一致。
-            // 未来这里可以改为：不禁用 GameObject，而是通知 VisualNode 里的脚本改变 Material 参数等。
-            if (VisualNode.activeSelf != isActive)
+            // 【情况 A】当前主世界的物体
+            // 只在遮罩外部可见 (VisibleOutsideMask)
+
+            VisualRenderer.gameObject.SetActive(true);
+
+            // 如果被替换区覆盖，需要被遮罩裁掉；预览区则只是透视，不覆盖。
+            if (zoneIn == ZoneType.AllSwitch)
             {
-                VisualNode.SetActive(isActive);
+                SetMaskInteraction(VisualRenderer, SpriteMaskInteraction.VisibleOutsideMask);
+            }
+            else
+            {
+                SetMaskInteraction(VisualRenderer, SpriteMaskInteraction.None); // 正常显示
+            }
+
+            SetAlpha(VisualRenderer, zoneIn == ZoneType.PreviewOnly ? 0.5f : 1.0f); // 在预览区则半透明
+        }
+        else
+        {
+            // 【情况 B】另一个世界（隐藏世界）的物体
+            // 只在遮罩内部可见 (VisibleInsideMask)
+
+            // 开启物体，但用遮罩隐藏它
+            VisualRenderer.gameObject.SetActive(true);
+            SetMaskInteraction(VisualRenderer, SpriteMaskInteraction.VisibleInsideMask);
+
+            // 如果处在预览区，半透明 (0.5f)；如果处在替换区，全实体 (1.0f)；都不在则设为完全透明 (0f) 
+            if (zoneIn == ZoneType.PreviewOnly)
+                SetAlpha(VisualRenderer, 0.5f);
+            else if (zoneIn == ZoneType.AllSwitch)
+                SetAlpha(VisualRenderer, 1.0f);
+            else
+                SetAlpha(VisualRenderer, 0.0f);
+        }
+    }
+
+    // 辅助方法：兼容 SpriteRenderer 和 TilemapRenderer 设置遮罩
+    private void SetMaskInteraction(Renderer r, SpriteMaskInteraction interaction)
+    {
+        if (r is SpriteRenderer sr) sr.maskInteraction = interaction;
+        else if (r is UnityEngine.Tilemaps.TilemapRenderer tr) tr.maskInteraction = interaction;
+    }
+
+    // 辅助方法：设置透明度
+    private void SetAlpha(Renderer r, float alpha)
+    {
+        if (r is SpriteRenderer sr)
+        {
+            Color c = sr.color;
+            c.a = alpha;
+            sr.color = c;
+        }
+        else if (r is UnityEngine.Tilemaps.TilemapRenderer tr)
+        {
+            var tilemap = tr.GetComponent<UnityEngine.Tilemaps.Tilemap>();
+            if (tilemap != null)
+            {
+                Color c = tilemap.color;
+                c.a = alpha;
+                tilemap.color = c;
             }
         }
     }

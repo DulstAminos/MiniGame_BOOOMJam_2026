@@ -42,3 +42,18 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: World_Front
+    uniqueID: 2479581419
+    locked: 0
+  - name: World_Back
+    uniqueID: 2113850095
+    locked: 0
+  - name: Shared_Objects
+    uniqueID: 4271976325
+    locked: 0
+  - name: Masks
+    uniqueID: 3805011693
+    locked: 0
+  - name: Foreground
+    uniqueID: 3829644069
+    locked: 0
