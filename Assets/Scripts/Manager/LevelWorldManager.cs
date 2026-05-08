@@ -51,11 +51,10 @@ public class LevelWorldManager : MonoBehaviour
         Debug.Log($"完全切换发生：从 {oldWorld} 切换到 {CurrentActiveWorld}");
 
         // 触发世界切换事件
-        WorldSwitchEventArgs args = new WorldSwitchEventArgs(oldWorld, CurrentActiveWorld);
-        this.TriggerEvent(EventName.OnWorldSwitch, args);
+        this.TriggerEvent(EventName.OnWorldSwitch, new WorldSwitchEventArgs(oldWorld, CurrentActiveWorld));
     }
 
-    //============部分切换区域逻辑=============
+    // ============ 对象注册与通知 =============
 
     // 记录当前激活的所有部分切换区域
     private Dictionary<int, PartialZoneData> activePartialZones = new Dictionary<int, PartialZoneData>();
@@ -69,10 +68,7 @@ public class LevelWorldManager : MonoBehaviour
     /// </summary>
     public void RegisterWorldObject(WorldObject obj)
     {
-        if (!allWorldObjects.Contains(obj))
-        {
-            allWorldObjects.Add(obj);
-        }
+        if (!allWorldObjects.Contains(obj)) allWorldObjects.Add(obj);
     }
 
     /// <summary>
@@ -82,6 +78,28 @@ public class LevelWorldManager : MonoBehaviour
     {
         allWorldObjects.Remove(obj);
     }
+
+
+    /// <summary>
+    /// 局部通知核心逻辑：仅唤醒圆圈内的物体进行检测
+    /// </summary>
+    private void NotifyObjectsNearArea(Vector2 center, float radius)
+    {
+        float delta = 1f;  // 适当扩大通知范围
+        float r = radius + delta;
+        float sqrRadius = r * r;
+        foreach (var obj in allWorldObjects)
+        {
+            // 使用平方距离计算，避免开方运算，提高性能
+            float sqrDistance = (obj.CenterPosition - center).sqrMagnitude;
+            if (sqrDistance <= sqrRadius)
+            {
+                obj.CheckAndApplyState();
+            }
+        }
+    }
+
+    // ============ 区域管理 =============
 
     /// <summary>
     /// 注册一个新的部分切换区域
@@ -104,15 +122,12 @@ public class LevelWorldManager : MonoBehaviour
     {
         if (activePartialZones.TryGetValue(id, out PartialZoneData zone))
         {
-            Vector2 oldCenter = zone.Center;
-            float oldRadius = zone.Radius;
+            NotifyObjectsNearArea(zone.Center, zone.Radius); // 通知旧位置
 
             zone.Center = newCenter;
             zone.Radius = newRadius;
 
-            // 区域移动时，旧区域和新区域覆盖的物体都需要重新检测状态
-            NotifyObjectsNearArea(oldCenter, oldRadius);
-            NotifyObjectsNearArea(newCenter, newRadius);
+            NotifyObjectsNearArea(newCenter, newRadius); // 通知新位置
         }
     }
 
@@ -123,87 +138,35 @@ public class LevelWorldManager : MonoBehaviour
     {
         if (activePartialZones.TryGetValue(id, out PartialZoneData zone))
         {
-            Vector2 oldCenter = zone.Center;
-            float oldRadius = zone.Radius;
             activePartialZones.Remove(id);
 
             // 区域移除时，通知原区域内的物体恢复状态
-            NotifyObjectsNearArea(oldCenter, oldRadius);
+            NotifyObjectsNearArea(zone.Center, zone.Radius);
         }
     }
 
+    // ============ 核心查询算法 =============
+
     /// <summary>
-    /// 【物理层专用】只判定 AllSwitch 类型的区域。
+    /// 【物理层专用】获取该位置理论上应该呈现的物理世界。
     /// 独有物体 (WorldObject) 用这个来决定是否开启物理。
     /// </summary>
     public WorldType GetPhysicalExpectedWorldAt(Vector2 position)
     {
-        return GetWorldAtByZoneType(position, ZoneType.AllSwitch);
-    }
-
-    /// <summary>
-    /// 【视觉层专用】判定所有类型的区域（AllSwitch 和 PreviewOnly）。
-    /// 共享物体 (SharedWorldObject) 和独有物体的视觉层用这个来决定长什么样。
-    /// </summary>
-    public WorldType GetVisualExpectedWorldAt(Vector2 position)
-    {
-        return GetWorldAtByZoneType(position, null);
-    }
-
-    /// <summary>
-    /// 内部通用判定算法：根据空间位置，获取该位置理论上应该呈现的世界类型。
-    /// 可指定检测的部分区域类型
-    /// </summary>
-    /// <param name="position">物体的中心点坐标</param>
-    /// <param name="targetZoneType">需检测的部分区域类型，null表示不限制区域类型</param>
-    /// <returns>该位置当前属于表世界还是里世界</returns>
-    private WorldType GetWorldAtByZoneType(Vector2 position, ZoneType? targetZoneType)
-    {
-        bool isInsideZone = false;
-
-        // 遍历所有的部分切换区域，检查点是否在区域内
         foreach (var zone in activePartialZones.Values)
         {
-            // 如果指定了类型，且当前区域类型不符，则跳过
-            if (targetZoneType.HasValue && zone.Type != targetZoneType.Value) continue;
-
-            float sqrDistance = (position - zone.Center).sqrMagnitude;
-            if (sqrDistance <= zone.Radius * zone.Radius)
+            // 物理层只受 AllSwitch 影响
+            if (zone.Type == ZoneType.AllSwitch && (position - zone.Center).sqrMagnitude <= zone.Radius * zone.Radius)
             {
-                isInsideZone = true;
-                break;
+                return CurrentActiveWorld == WorldType.Front ? WorldType.Back : WorldType.Front;
             }
         }
-
-        // 如果在圈内，则是“相反的世界”；如果在圈外，则是“当前的主世界”
-        if (isInsideZone)
-            return CurrentActiveWorld == WorldType.Front ? WorldType.Back : WorldType.Front;
-        else
-            return CurrentActiveWorld;
-    }
-
-    /// <summary>
-    /// 局部通知核心逻辑：仅唤醒圆圈内的物体进行检测
-    /// </summary>
-    private void NotifyObjectsNearArea(Vector2 center, float radius)
-    {
-        float delta = 1f;  // 适当扩大通知范围
-        float r = radius + delta;
-        float sqrRadius = r * r;
-        foreach (var obj in allWorldObjects)
-        {
-            // 使用平方距离计算，避免开方运算，提高性能
-            float sqrDistance = (obj.CenterPosition - center).sqrMagnitude;
-            if (sqrDistance <= sqrRadius)
-            {
-                obj.CheckAndApplyState();
-            }
-        }
+        return CurrentActiveWorld;
     }
 
     /// <summary>
     /// 【视觉层专用】获取物体当前所在位置的最高优先级区域类型。
-    /// 返回 null 表示不在任何区域内（受大世界控制）。
+    /// 优先级：AllSwitch > PreviewOnly > None(返回null)
     /// </summary>
     public ZoneType? GetHighestPriorityZoneAt(Vector2 position)
     {
@@ -214,16 +177,11 @@ public class LevelWorldManager : MonoBehaviour
             float sqrDistance = (position - zone.Center).sqrMagnitude;
             if (sqrDistance <= zone.Radius * zone.Radius)
             {
-                // 如果是完全切换，优先级最高，直接返回
-                if (zone.Type == ZoneType.AllSwitch)
-                {
-                    return ZoneType.AllSwitch;
-                }
-                // 如果是预览区，先记录下来，继续找找看有没有物理区覆盖它
-                else if (zone.Type == ZoneType.PreviewOnly)
-                {
-                    highestZone = ZoneType.PreviewOnly;
-                }
+                // 如果是替换区，优先级最高，直接返回
+                if (zone.Type == ZoneType.AllSwitch) return ZoneType.AllSwitch;
+                // 不是替换区，只能是预览区，先记录下来，继续找找看有没有物理区覆盖它
+                highestZone = ZoneType.PreviewOnly;
+
             }
         }
         return highestZone;
