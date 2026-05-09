@@ -126,14 +126,15 @@ public class WorldObject : MonoBehaviour
     /// <summary>
     /// 辅助方法：统一设置渲染器的遮罩与透明度（供自身与子类复用）
     /// </summary>
-    protected void SetRendererMaskAndAlpha(Renderer r, SpriteMaskInteraction mask, float alpha)
+    /// <param name="alpha">为null则不改变透明度</param>
+    protected void SetRendererMaskAndAlpha(Renderer r, SpriteMaskInteraction mask, float? alpha)
     {
         if (r == null) return;
 
         if (r is SpriteRenderer sr)
         {
             sr.maskInteraction = mask;
-            Color c = sr.color; c.a = alpha; sr.color = c;
+            Color c = sr.color; c.a = alpha ?? c.a; sr.color = c;
         }
         else if (r is UnityEngine.Tilemaps.TilemapRenderer tr)
         {
@@ -141,7 +142,7 @@ public class WorldObject : MonoBehaviour
             var tilemap = tr.GetComponent<UnityEngine.Tilemaps.Tilemap>();
             if (tilemap != null)
             {
-                Color c = tilemap.color; c.a = alpha; tilemap.color = c;
+                Color c = tilemap.color; c.a = alpha ?? c.a; tilemap.color = c;
             }
         }
     }
