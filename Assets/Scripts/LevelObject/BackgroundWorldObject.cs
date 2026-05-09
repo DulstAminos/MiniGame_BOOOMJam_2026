@@ -6,7 +6,7 @@
 /// </summary>
 public class BackgroundWorldObject : WorldObject
 {
-    [Header("Background Settings")]
+    [Header("背景设置")]
     [Tooltip("背景距离摄像机的 Z 轴深度（值越大越靠后）")]
     public float DepthZ = 10f;
 

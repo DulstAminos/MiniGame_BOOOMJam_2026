@@ -7,7 +7,7 @@
 [RequireComponent(typeof(SpriteMask))]
 public class ZoneController : MonoBehaviour
 {
-    [Header("Zone Settings")]
+    [Header("区域设置")]
     [Tooltip("区域类型：物理切换 还是 仅视觉预览")]
     public ZoneType Type = ZoneType.PreviewOnly;
 

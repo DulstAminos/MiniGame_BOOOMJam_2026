@@ -11,7 +11,7 @@ public class LevelWorldManager : MonoBehaviour
     // 场景级单例
     public static LevelWorldManager Instance { get; private set; }
 
-    [Header("Level Settings")]
+    [Header("关卡设置")]
     [Tooltip("关卡初始处于哪个世界")]
     public WorldType InitialWorld = WorldType.Front;
 

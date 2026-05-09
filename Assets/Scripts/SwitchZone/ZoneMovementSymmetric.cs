@@ -2,7 +2,9 @@
 
 public class ZoneMovementSymmetric : ZoneMovementBase
 {
+    [Tooltip("玩家位置引用")]
     public Transform Player;
+    [Tooltip("关卡中心点引用")]
     public Transform RoomCenter; // 房间的中心点
 
     protected override void HandleMovement()

@@ -7,11 +7,11 @@ using UnityEngine;
 /// </summary>
 public class WorldObject : MonoBehaviour
 {
-    [Header("World Settings")]
+    [Header("世界设置")]
     [Tooltip("该物体原生属于哪个世界")]
     public WorldType SourceWorld;
 
-    [Header("Module References")]
+    [Header("模块引用")]
     [Tooltip("负责物理的子物体")]
     public GameObject PhysicsNode;
 
@@ -20,6 +20,17 @@ public class WorldObject : MonoBehaviour
 
     [Tooltip("视觉节点上的渲染器")]
     public Renderer VisualRenderer;
+
+    [Header("透明度设置(越小越透明)")]
+    [Tooltip("不透明度")]
+    [Range(0f, 1f)]
+    public float largeTransparency = 1.0f;
+    [Tooltip("半透明度")]
+    [Range(0f, 1f)]
+    public float mediumTransparency = 0.5f;
+    [Tooltip("几乎透明度")]
+    [Range(0f, 1f)]
+    public float smallTransparency = 0.2f;
 
     // 获取物体的判定中心点
     public Vector2 CenterPosition => transform.position;
@@ -100,12 +111,12 @@ public class WorldObject : MonoBehaviour
             // 【情况 A】当前主世界的物体
 
             // 默认不透明，在遮罩外显示
-            float alpha = 1.0f;
+            float alpha = largeTransparency;
             SpriteMaskInteraction mask = SpriteMaskInteraction.VisibleOutsideMask;
             // 在替换区则可在遮罩内显示，几乎透明
             if (zoneIn == ZoneType.AllSwitch)
             {
-                alpha = 0.2f;
+                alpha = smallTransparency;
                 mask = SpriteMaskInteraction.None;
             }
 
@@ -116,8 +127,8 @@ public class WorldObject : MonoBehaviour
             // 【情况 B】另一个世界（隐藏世界）的物体
 
             // 默认几乎透明，替换区不透明
-            float alpha = 0.2f;
-            if (zoneIn == ZoneType.AllSwitch) alpha = 1.0f;
+            float alpha = smallTransparency;
+            if (zoneIn == ZoneType.AllSwitch) alpha = largeTransparency;
 
             SetRendererMaskAndAlpha(VisualRenderer, SpriteMaskInteraction.VisibleInsideMask, alpha);
         }

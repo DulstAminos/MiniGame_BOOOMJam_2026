@@ -6,7 +6,7 @@
 /// </summary>
 public class SharedWorldObject : WorldObject
 {
-    [Header("Shared Object Specific")]
+    [Header("共有物体特定属性")]
     [Tooltip("表世界的视觉节点")]
     public GameObject VisualNode_Front;
     [Tooltip("里世界的视觉节点")]
@@ -48,13 +48,13 @@ public class SharedWorldObject : WorldObject
         Renderer insideRenderer = isFrontActive ? Renderer_Back : Renderer_Front;
 
         // 默认主世界不透明，隐藏世界半透明
-        float outAlpha = 1.0f;
-        float inAlpha = 0.5f;
+        float outAlpha = largeTransparency;
+        float inAlpha = mediumTransparency;
         // 若在替换区则反转
         if (zoneIn == ZoneType.AllSwitch)
         {
-            outAlpha = 0.5f;
-            inAlpha = 1.0f;
+            outAlpha = mediumTransparency;
+            inAlpha = largeTransparency;
         }
 
         // 设置主世界（外部）渲染器：永远只在遮罩外部显示
