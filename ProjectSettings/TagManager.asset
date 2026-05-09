@@ -42,10 +42,10 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
-  - name: World_Front
+  - name: World_Back
     uniqueID: 2479581419
     locked: 0
-  - name: World_Back
+  - name: World_Front
     uniqueID: 2113850095
     locked: 0
   - name: Shared_Objects

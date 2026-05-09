@@ -99,9 +99,15 @@ public class WorldObject : MonoBehaviour
         {
             // 【情况 A】当前主世界的物体
 
-            // 如果被替换区覆盖，需要被遮罩裁掉；预览区则只是透视，不覆盖。
-            SpriteMaskInteraction mask = zoneIn == ZoneType.AllSwitch ? SpriteMaskInteraction.VisibleOutsideMask : SpriteMaskInteraction.None;
-            float alpha = zoneIn == ZoneType.PreviewOnly ? 0.5f : 1.0f;
+            // 默认不透明，在遮罩外显示
+            float alpha = 1.0f;
+            SpriteMaskInteraction mask = SpriteMaskInteraction.VisibleOutsideMask;
+            // 在替换区则可在遮罩内显示，几乎透明
+            if (zoneIn == ZoneType.AllSwitch)
+            {
+                alpha = 0.2f;
+                mask = SpriteMaskInteraction.None;
+            }
 
             SetRendererMaskAndAlpha(VisualRenderer, mask, alpha);
         }
@@ -109,9 +115,9 @@ public class WorldObject : MonoBehaviour
         {
             // 【情况 B】另一个世界（隐藏世界）的物体
 
-            float alpha = 0.0f;
-            if (zoneIn == ZoneType.PreviewOnly) alpha = 0.5f;
-            else if (zoneIn == ZoneType.AllSwitch) alpha = 1.0f;
+            // 默认几乎透明，替换区不透明
+            float alpha = 0.2f;
+            if (zoneIn == ZoneType.AllSwitch) alpha = 1.0f;
 
             SetRendererMaskAndAlpha(VisualRenderer, SpriteMaskInteraction.VisibleInsideMask, alpha);
         }

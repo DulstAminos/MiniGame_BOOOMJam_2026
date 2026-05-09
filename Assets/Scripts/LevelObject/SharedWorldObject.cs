@@ -47,14 +47,20 @@ public class SharedWorldObject : WorldObject
         Renderer outsideRenderer = isFrontActive ? Renderer_Front : Renderer_Back;
         Renderer insideRenderer = isFrontActive ? Renderer_Back : Renderer_Front;
 
-        // 通用透明度逻辑：如果在预览区，都是半透明；否则全实心
-        float alpha = zoneIn == ZoneType.PreviewOnly ? 0.5f : 1.0f;
+        // 默认主世界不透明，隐藏世界半透明
+        float outAlpha = 1.0f;
+        float inAlpha = 0.5f;
+        // 若在替换区则反转
+        if (zoneIn == ZoneType.AllSwitch)
+        {
+            outAlpha = 0.5f;
+            inAlpha = 1.0f;
+        }
 
-        // 设置主世界（外部）渲染器：如果被完全替换区覆盖，则被遮罩裁掉；否则正常显示
-        SpriteMaskInteraction outMask = zoneIn == ZoneType.AllSwitch ? SpriteMaskInteraction.VisibleOutsideMask : SpriteMaskInteraction.None;
-        SetRendererMaskAndAlpha(outsideRenderer, outMask, alpha);
+        // 设置主世界（外部）渲染器：永远只在遮罩外部显示
+        SetRendererMaskAndAlpha(outsideRenderer, SpriteMaskInteraction.VisibleOutsideMask, outAlpha);
 
         // 设置隐藏世界（内部）渲染器：永远只在遮罩内部显示
-        SetRendererMaskAndAlpha(insideRenderer, SpriteMaskInteraction.VisibleInsideMask, alpha);
+        SetRendererMaskAndAlpha(insideRenderer, SpriteMaskInteraction.VisibleInsideMask, inAlpha);
     }
 }
