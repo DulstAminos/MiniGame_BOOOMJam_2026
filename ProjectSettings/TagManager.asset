@@ -54,7 +54,7 @@ TagManager:
   - name: Shared_Objects
     uniqueID: 4271976325
     locked: 0
-  - name: Masks
+  - name: ItemAndMasks
     uniqueID: 3805011693
     locked: 0
   - name: Foreground

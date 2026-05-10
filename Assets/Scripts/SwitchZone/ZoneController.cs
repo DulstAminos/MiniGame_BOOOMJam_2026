@@ -1,18 +1,17 @@
 ﻿using UnityEngine;
 
 /// <summary>
-/// 区域控制器，挂载在具有 Sprite Mask 的区域实体上。
+/// 区域控制器
 /// 负责与 LevelWorldManager 通信，报告自己的位置和大小。
 /// </summary>
-[RequireComponent(typeof(SpriteMask))]
 public class ZoneController : MonoBehaviour
 {
     [Header("区域设置")]
     [Tooltip("区域类型：物理切换 还是 仅视觉预览")]
     public ZoneType Type = ZoneType.PreviewOnly;
 
-    [Tooltip("区域的有效作用半径（需与 SpriteMask 的大小匹配）")]
-    public float Radius = 3f;
+    [Tooltip("区域的有效作用半径")]
+    public float Radius = 1f;
 
     // 记录在管理器中的唯一 ID
     private int zoneID = -1;
@@ -20,6 +19,7 @@ public class ZoneController : MonoBehaviour
 
     private void Start()
     {
+        transform.localScale = Vector3.one * Radius;
         // 注册到管理器，获取 ID
         if (LevelWorldManager.Instance != null)
         {
@@ -30,8 +30,15 @@ public class ZoneController : MonoBehaviour
 
     private void Update()
     {
-        // 只有位置发生变化时，才通知管理器更新（节省性能）
-        if (Vector2.SqrMagnitude((Vector2)transform.position - lastPosition) > 0.001f)
+        // 只有位置或大小发生变化时，才通知管理器更新
+        bool isRadiusChanged = false;
+        if (transform.localScale != Vector3.one * Radius)
+        {
+            transform.localScale = Vector3.one * Radius;
+            isRadiusChanged = true;
+        }
+
+        if (Vector2.SqrMagnitude((Vector2)transform.position - lastPosition) > 0.001f || isRadiusChanged)
         {
             if (LevelWorldManager.Instance != null && zoneID != -1)
             {

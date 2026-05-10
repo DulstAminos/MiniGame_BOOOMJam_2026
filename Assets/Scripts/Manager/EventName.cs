@@ -6,19 +6,6 @@
 public static class EventName
 {
     public const string OnWorldSwitch = nameof(OnWorldSwitch);
-    // 事件名称样例
-    //public const string OnTest = nameof(OnTest);
+    public const string OnItemCountChanged = nameof(OnItemCountChanged);       // 道具数量改变时触发
+    public const string OnCurrentItemChanged = nameof(OnCurrentItemChanged);   // 当前手持道具切换时触发
 }
-
-// 事件参数样例
-//public class OnTestEventArgs : EventArgs
-//{
-//    public string testString;
-//}
-
-// 事件处理器样例
-//private void OnTestEventHandler(object sender, EventArgs e)
-//{
-//    var data = e as OnTestEventArgs;
-//    if (data != null) Debug.Log(data.testString);
-//}

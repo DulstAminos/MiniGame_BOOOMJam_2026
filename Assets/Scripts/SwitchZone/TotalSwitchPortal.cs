@@ -21,7 +21,7 @@ public class TotalSwitchPortal : MonoBehaviour
             LevelWorldManager.Instance.RequestTotalSwitch();
 
             // 切换后，销毁传送门
-            Destroy(gameObject);
+            Destroy(transform.parent.gameObject);
         }
     }
 }

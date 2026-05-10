@@ -4,6 +4,6 @@ root = true
 # 设置所有文件的编码为 UTF-8 带签名 (BOM)
 charset = utf-8-bom
 # 统一换行符
-end_of_line = lf
+end_of_line = crlf
 # 始终在文件末尾插入新行
 insert_final_newline = true
