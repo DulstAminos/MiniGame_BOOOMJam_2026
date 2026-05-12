@@ -57,6 +57,14 @@ public class AimController : MonoBehaviour
 
     private void Update()
     {
+        if (GameplayInputBlocker.IsBlocked)
+        {
+            SetVisualsActive(false);
+            return;
+        }
+
+        SetVisualsActive(isAimingActive);
+
         // 如果未激活预瞄（空手），直接跳过计算
         if (!isAimingActive) return;
 
