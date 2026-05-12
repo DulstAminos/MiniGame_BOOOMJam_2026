@@ -14,6 +14,10 @@ public class LevelWorldManager : MonoBehaviour
     [Header("关卡设置")]
     [Tooltip("关卡初始处于哪个世界")]
     public WorldType InitialWorld = WorldType.Front;
+    [Tooltip("玩家出生点")]
+    public Transform startPoint;
+    [Tooltip("玩家预制体")]
+    public GameObject playerPrefab;
 
     // 当前主世界状态
     public WorldType CurrentActiveWorld { get; private set; }
@@ -30,6 +34,42 @@ public class LevelWorldManager : MonoBehaviour
 
         // 初始化当前世界
         CurrentActiveWorld = InitialWorld;
+    }
+
+    private void OnEnable()
+    {
+        EventManager.Instance.AddListener(EventName.OnSceneLoaded, InitPlayerPos);
+    }
+
+    private void OnDisable()
+    {
+        EventManager.Instance.RemoveListener(EventName.OnSceneLoaded, InitPlayerPos);
+    }
+
+    // 初始化玩家位置
+    private void InitPlayerPos(object sender, EventArgs e)
+    {
+        // 尝试查找玩家
+        GameObject player = GameObject.FindWithTag("Player");
+        if (player != null)
+        {
+            // 如果找到了，将其坐标设为 startPoint
+            player.transform.position = startPoint.position;
+            Debug.Log("已找到现有玩家，已重置位置到: " + startPoint);
+        }
+        else
+        {
+            // 如果没找到，则在 startPoint 实例化一个 playerPrefab
+            if (playerPrefab != null)
+            {
+                Instantiate(playerPrefab, startPoint.position, Quaternion.identity);
+                Debug.Log("未找到玩家，已在目标点实例化新玩家。");
+            }
+            else
+            {
+                Debug.LogError("未找到玩家且未分配 PlayerPrefab！");
+            }
+        }
     }
 
     private void Start()

@@ -26,16 +26,26 @@ public class PlayerController : MonoBehaviour
     // 对应 Action Map 里的 Move
     public void OnMove(InputValue value)
     {
+        if (GameManager.Instance.CurrentState != GameState.Playing)
+            moveInput = Vector2.zero;
         moveInput = value.Get<Vector2>();
     }
 
     // 对应 Action Map 里的 Jump
     public void OnJump(InputValue value)
     {
-        if (value.isPressed && isGrounded)
+        bool isPlaying = GameManager.Instance.CurrentState == GameState.Playing;
+        if (isPlaying && value.isPressed && isGrounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
+    }
+
+    // 对应 Action Map 里的 Reset
+    public void OnReset(InputValue value)
+    {
+        //if (GameManager.Instance.CurrentState != GameState.Playing) return;
+        SceneFlowManager.Instance.ReloadCurrentLevel();
     }
 
     void Update()
