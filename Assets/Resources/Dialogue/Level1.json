@@ -1,0 +1,23 @@
+{
+  "leftSpeakerName": "Explorer",
+  "rightSpeakerName": "Guide",
+  "leftPortraitResourcePath": "",
+  "rightPortraitResourcePath": "",
+  "introDelaySeconds": 1.0,
+  "typewriterCharactersPerSecond": 30.0,
+  "portraitSlideDuration": 0.45,
+  "lines": [
+    {
+      "speaker": 0,
+      "text": "We made it into the room."
+    },
+    {
+      "speaker": 1,
+      "text": "Stay focused. The front world and back world may react differently here."
+    },
+    {
+      "speaker": 0,
+      "text": "Got it. I will move after this conversation ends."
+    }
+  ]
+}

@@ -74,6 +74,8 @@ public class InventoryManager : MonoBehaviour
     /// </summary>
     private void SwitchToNextItem()
     {
+        if (GameplayInputBlocker.IsBlocked) return;
+
         if (CurrentItem == ItemType.None)
         {
             if (partialZoneCount > 0) SetCurrentItem(ItemType.PartialZone);

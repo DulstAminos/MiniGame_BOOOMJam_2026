@@ -1,4 +1,4 @@
-﻿using UnityEngine;
+using UnityEngine;
 
 public class ItemProjectile : MonoBehaviour
 {
@@ -15,15 +15,17 @@ public class ItemProjectile : MonoBehaviour
     private Vector2 targetPos;
     private float finalSize;
     private bool isFired = false;
+    private ThrowController ownerThrowController;
 
     /// <summary>
     /// 初始化并发射投掷物
     /// </summary>
-    public void Fire(ItemType type, Vector2 target, float size)
+    public void Fire(ItemType type, Vector2 target, float size, ThrowController owner)
     {
         itemType = type;
         targetPos = target;
         finalSize = size;
+        ownerThrowController = owner;
         isFired = true;
 
         // 让投掷物朝向目标点飞行
@@ -95,6 +97,11 @@ public class ItemProjectile : MonoBehaviour
             if (controller != null)
             {
                 controller.Radius = finalSize;
+            }
+
+            if (itemType == ItemType.PartialZone && ownerThrowController != null)
+            {
+                ownerThrowController.RegisterThrownPartialZone(zoneObj);
             }
         }
 
