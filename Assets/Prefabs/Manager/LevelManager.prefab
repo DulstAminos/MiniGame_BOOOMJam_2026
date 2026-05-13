@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   InitialWorld: 0
-  startPoint: {fileID: 7956721842093500702}
+  spawnPoint: {fileID: 7956721842093500702}
   playerPrefab: {fileID: 3399286030823679410, guid: d1369ef431fa65940aa31d175dc63895, type: 3}
 --- !u!1 &2503431692309573052
 GameObject:

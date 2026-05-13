@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4223881354715837601}
   - component: {fileID: 3943248588220402951}
+  - component: {fileID: 846711206821002466}
   m_Layer: 0
   m_Name: LevelBounds
   m_TagString: Bounds
@@ -81,3 +82,16 @@ PolygonCollider2D:
       - {x: -22, y: -12}
       - {x: -22, y: 12}
   m_UseDelaunayMesh: 0
+--- !u!114 &846711206821002466
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4026529879647899340}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7aa73e7531b48cd4fb4bd59816b49164, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  deathDelay: 0.5
