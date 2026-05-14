@@ -5,17 +5,33 @@ public class LevelGoal : MonoBehaviour
 {
     [Header("通关设置")]
     public float winDelay = 0.5f; // 碰到终点后延迟多久进入下一关
+    public float velocityThreshold = 0.01f; // y方向速度的阈值（绝对值小于此值视为静止）
 
     private bool isTriggered = false;
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // 防止重复触发，且必须是玩家
-        if (isTriggered || !other.CompareTag("Player")) return;
+        CheckGoal(other);
+    }
 
-        // 必须在游玩状态下才能触发通关（防止转场时误触）
+    private void CheckGoal(Collider2D other)
+    {
+        // 1. 基础条件检查
+        if (isTriggered || !other.CompareTag("Player")) return;
         if (GameManager.Instance.CurrentState != GameState.Playing) return;
 
+        // 2. 检查 y 方向速度
+        Rigidbody2D rb = other.GetComponent<Rigidbody2D>();
+        if (rb != null)
+        {
+            // 如果 y 方向速度的绝对值大于阈值，说明正在跳跃或坠落，不触发
+            if (Mathf.Abs(rb.velocity.y) > velocityThreshold)
+            {
+                return;
+            }
+        }
+
+        // 3. 符合条件，执行通关
         isTriggered = true;
         StartCoroutine(WinRoutine());
     }
