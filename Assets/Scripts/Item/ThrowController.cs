@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
@@ -156,6 +156,9 @@ public class ThrowController : MonoBehaviour
             Vector2 startPos = throwPoint != null ? (Vector2)throwPoint.position : (Vector2)transform.position;
             ItemProjectile proj = Instantiate(projectilePrefab, startPos, Quaternion.identity);
             proj.Fire(itemType, targetPos, finalSize, this);
+
+            // 广播投掷事件
+            this.TriggerEvent(EventName.OnPlayerThrow);
         }
         else
         {

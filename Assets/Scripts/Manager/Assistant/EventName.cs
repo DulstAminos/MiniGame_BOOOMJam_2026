@@ -9,4 +9,5 @@ public static class EventName
     public const string OnItemCountChanged = nameof(OnItemCountChanged);       // 道具数量改变时触发
     public const string OnCurrentItemChanged = nameof(OnCurrentItemChanged);   // 当前手持道具切换时触发
     public const string OnSceneLoaded = nameof(OnSceneLoaded);
+    public const string OnPlayerThrow = nameof(OnPlayerThrow); // 玩家成功投掷道具时触发
 }
