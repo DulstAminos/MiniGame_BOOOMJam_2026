@@ -176,6 +176,19 @@ public class ThrowController : MonoBehaviour
         }
     }
 
+    public void RefundItem(ItemType itemType, int amount = 1)
+    {
+        if (amount <= 0) return;
+
+        if (inventory == null)
+        {
+            inventory = GetComponent<InventoryManager>();
+        }
+
+        if (inventory == null) return;
+        inventory.ModifyItemCount(itemType, amount);
+    }
+
     private void RecallAllPartialZones()
     {
         activeThrownPartialZones.RemoveAll(zone => zone == null);
