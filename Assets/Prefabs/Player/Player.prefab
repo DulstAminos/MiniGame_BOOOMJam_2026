@@ -251,7 +251,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 5268792480540979410}
-  - component: {fileID: 8944231818842887749}
+  - component: {fileID: 1486075440245262573}
   - component: {fileID: 3340712685299701565}
   - component: {fileID: 4137584715129785462}
   - component: {fileID: 3436360721419520746}
@@ -284,8 +284,8 @@ Transform:
   - {fileID: 8780514943550445550}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!61 &8944231818842887749
-BoxCollider2D:
+--- !u!70 &1486075440245262573
+CapsuleCollider2D:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
@@ -316,19 +316,9 @@ BoxCollider2D:
   m_IsTrigger: 0
   m_UsedByEffector: 0
   m_UsedByComposite: 0
-  m_Offset: {x: 0, y: 0.25}
-  m_SpriteTilingProperty:
-    border: {x: 0, y: 0, z: 0, w: 0}
-    pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1.5555556}
-    newSize: {x: 1, y: 1}
-    adaptiveTilingThreshold: 0.5
-    drawMode: 0
-    adaptiveTiling: 0
-  m_AutoTiling: 0
-  serializedVersion: 2
-  m_Size: {x: 1, y: 1.5}
-  m_EdgeRadius: 0
+  m_Offset: {x: 0, y: 0.2}
+  m_Size: {x: 0.8, y: 1.4}
+  m_Direction: 0
 --- !u!50 &3340712685299701565
 Rigidbody2D:
   serializedVersion: 4
@@ -345,7 +335,7 @@ Rigidbody2D:
   m_LinearDrag: 0
   m_AngularDrag: 0.05
   m_GravityScale: 3
-  m_Material: {fileID: 0}
+  m_Material: {fileID: 6200000, guid: f624b6cc0b528154aa9dfdc1721bbf9a, type: 2}
   m_IncludeLayers:
     serializedVersion: 2
     m_Bits: 0
