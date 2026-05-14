@@ -103,6 +103,14 @@ public class ItemProjectile : MonoBehaviour
             {
                 ownerThrowController.RegisterThrownPartialZone(zoneObj);
             }
+            else if (itemType == ItemType.Portal)
+            {
+                TotalSwitchPortal portal = zoneObj.GetComponentInChildren<TotalSwitchPortal>();
+                if (portal != null)
+                {
+                    portal.Initialize(ownerThrowController);
+                }
+            }
         }
 
         // 区域生成完毕，销毁投掷物自身

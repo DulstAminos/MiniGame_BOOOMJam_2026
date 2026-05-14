@@ -132,7 +132,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 5185609157372111789, guid: af7ec47c2ebf2194b8f77e83020848cd, type: 3}
       propertyPath: levels.Array.size
-      value: 5
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 5185609157372111789, guid: af7ec47c2ebf2194b8f77e83020848cd, type: 3}
       propertyPath: levels.Array.data[4].levelName
@@ -141,6 +141,22 @@ PrefabInstance:
     - target: {fileID: 5185609157372111789, guid: af7ec47c2ebf2194b8f77e83020848cd, type: 3}
       propertyPath: levels.Array.data[4].sceneName
       value: Level_5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5185609157372111789, guid: af7ec47c2ebf2194b8f77e83020848cd, type: 3}
+      propertyPath: levels.Array.data[5].levelName
+      value: Level 6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5185609157372111789, guid: af7ec47c2ebf2194b8f77e83020848cd, type: 3}
+      propertyPath: levels.Array.data[5].sceneName
+      value: Level_6
+      objectReference: {fileID: 0}
+    - target: {fileID: 5185609157372111789, guid: af7ec47c2ebf2194b8f77e83020848cd, type: 3}
+      propertyPath: levels.Array.data[6].levelName
+      value: Level 7
+      objectReference: {fileID: 0}
+    - target: {fileID: 5185609157372111789, guid: af7ec47c2ebf2194b8f77e83020848cd, type: 3}
+      propertyPath: levels.Array.data[6].sceneName
+      value: Level_7
       objectReference: {fileID: 0}
     - target: {fileID: 5703349800650537604, guid: af7ec47c2ebf2194b8f77e83020848cd, type: 3}
       propertyPath: m_LocalPosition.x
@@ -185,6 +201,10 @@ PrefabInstance:
     - target: {fileID: 6860041659093224752, guid: af7ec47c2ebf2194b8f77e83020848cd, type: 3}
       propertyPath: m_Name
       value: '[CoreServices]'
+      objectReference: {fileID: 0}
+    - target: {fileID: 8312965530869392925, guid: af7ec47c2ebf2194b8f77e83020848cd, type: 3}
+      propertyPath: transitionDuration
+      value: 0.5
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
