@@ -62,12 +62,18 @@ public class SceneFlowManager : MonoSingleton<SceneFlowManager>
     {
         if (delay > 0) yield return new WaitForSeconds(delay); // 注意：这里用受时间缩放影响的等待
 
-        string sceneName = DataManager.Instance.levels[DataManager.Instance.CurrentPlayingIndex].sceneName;
+        string sceneName = SceneManager.GetActiveScene().name;
         yield return StartCoroutine(TransitionAndLoad(sceneName, GameState.Playing));
     }
 
     private IEnumerator TransitionAndLoad(string sceneName, GameState targetState)
     {
+        if (!HasTransitionSetup())
+        {
+            yield return StartCoroutine(LoadWithoutTransition(sceneName, targetState));
+            yield break;
+        }
+
         // 1. 设置状态为转场中，拦截输入并暂停时间
         GameManager.Instance.ChangeState(GameState.Transitioning);
         Time.timeScale = 0f;
@@ -100,6 +106,8 @@ public class SceneFlowManager : MonoSingleton<SceneFlowManager>
             yield return null;
         }
 
+        SyncCurrentPlayingIndexWithActiveScene();
+
         // --- 场景加载完毕 ---
         // 对齐新场景的摄像机
         if (Camera.main != null)
@@ -126,6 +134,57 @@ public class SceneFlowManager : MonoSingleton<SceneFlowManager>
 
         // 5. 恢复目标状态和时间
         GameManager.Instance.ChangeState(targetState);
+    }
+
+    private IEnumerator LoadWithoutTransition(string sceneName, GameState targetState)
+    {
+        GameManager.Instance.ChangeState(GameState.Transitioning);
+        Time.timeScale = 0f;
+
+        AsyncOperation asyncLoad = SceneManager.LoadSceneAsync(sceneName);
+        while (!asyncLoad.isDone)
+        {
+            yield return null;
+        }
+
+        SyncCurrentPlayingIndexWithActiveScene();
+        this.TriggerEvent(EventName.OnSceneLoaded);
+        GameManager.Instance.ChangeState(targetState);
+    }
+
+    private bool HasTransitionSetup()
+    {
+        return maskTransform != null && transitionSystemRoot != null;
+    }
+
+    private void SyncCurrentPlayingIndexWithActiveScene()
+    {
+        if (DataManager.Instance == null || DataManager.Instance.levels == null) return;
+
+        string activeSceneName = SceneManager.GetActiveScene().name;
+        for (int i = 0; i < DataManager.Instance.levels.Count; i++)
+        {
+            LevelConfig config = DataManager.Instance.levels[i];
+            if (config == null || string.IsNullOrWhiteSpace(config.sceneName)) continue;
+
+            if (SceneNamesMatch(config.sceneName, activeSceneName))
+            {
+                DataManager.Instance.CurrentPlayingIndex = i;
+                return;
+            }
+        }
+    }
+
+    private static bool SceneNamesMatch(string configuredSceneName, string activeSceneName)
+    {
+        return NormalizeSceneName(configuredSceneName) == NormalizeSceneName(activeSceneName);
+    }
+
+    private static string NormalizeSceneName(string sceneName)
+    {
+        return string.IsNullOrWhiteSpace(sceneName)
+            ? string.Empty
+            : sceneName.Replace(" ", string.Empty).ToLowerInvariant();
     }
 
     private void UpdateTransitionPosition()

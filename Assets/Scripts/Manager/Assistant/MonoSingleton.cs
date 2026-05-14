@@ -8,6 +8,12 @@ public class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
     {
         get
         {
+            // Enter Play Mode without domain reload can leave this flag behind.
+            if (isQuitting && Application.isPlaying)
+            {
+                isQuitting = false;
+            }
+
             // 如果程序正在退出，直接返回 null，防止在退出阶段自动创建新对象
             if (isQuitting)
             {
@@ -29,6 +35,8 @@ public class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
 
     protected virtual void Awake()
     {
+        isQuitting = false;
+
         if (instance == null)
         {
             instance = this as T;
@@ -49,6 +57,9 @@ public class MonoSingleton<T> : MonoBehaviour where T : MonoBehaviour
     // 当物体被销毁时触发
     protected virtual void OnDestroy()
     {
-        isQuitting = true;
+        if (ReferenceEquals(instance, this))
+        {
+            instance = null;
+        }
     }
 }

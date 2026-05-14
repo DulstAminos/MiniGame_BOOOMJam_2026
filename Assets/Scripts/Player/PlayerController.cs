@@ -49,9 +49,13 @@ public class PlayerController : MonoBehaviour
     // 对应 Action Map 里的 Reset
     public void OnReset(InputValue value)
     {
-        if (GameplayInputBlocker.IsBlocked || GameManager.Instance.CurrentState != GameState.Playing) return;
-        GameManager.Instance.ChangeState(GameState.Transitioning);
-        SceneFlowManager.Instance.ReloadCurrentLevel();
+        GameManager gameManager = GameManager.Instance;
+        SceneFlowManager sceneFlowManager = SceneFlowManager.Instance;
+        if (!value.isPressed || GameplayInputBlocker.IsBlocked || gameManager == null || sceneFlowManager == null) return;
+        if (gameManager.CurrentState != GameState.Playing) return;
+
+        gameManager.ChangeState(GameState.Transitioning);
+        sceneFlowManager.ReloadCurrentLevel();
     }
 
     void Update()

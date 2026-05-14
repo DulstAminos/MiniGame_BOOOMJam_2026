@@ -1,5 +1,6 @@
 #if UNITY_EDITOR
 using System.IO;
+using TMPro;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +11,7 @@ public static class DialoguePrefabGenerator
     private const string DialogueFolder = "Assets/Resources/Dialogue";
     private const string WhiteTexturePath = "Assets/Resources/Dialogue/SimpleDialogueWhite.png";
     private const string PrefabPath = "Assets/Resources/Dialogue/SimpleSceneDialogueCanvas.prefab";
+    private const string DefaultTmpFontPath = "Assets/TextMesh Pro/Resources/Fonts & Materials/LiberationSans SDF.asset";
 
     [MenuItem("Tools/Dialogue/Generate Simple Dialogue Canvas Prefab")]
     public static void GeneratePrefabAsset()
@@ -18,7 +20,7 @@ public static class DialoguePrefabGenerator
         EnsureFolder(DialogueFolder);
 
         Sprite whiteSprite = EnsureWhiteSprite();
-        Font font = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
+        TMP_FontAsset tmpFont = LoadDefaultTmpFont();
 
         GameObject root = new GameObject("SimpleSceneDialogueCanvas", typeof(RectTransform), typeof(Canvas), typeof(CanvasScaler), typeof(GraphicRaycaster));
         RectTransform rootRect = root.GetComponent<RectTransform>();
@@ -38,15 +40,46 @@ public static class DialoguePrefabGenerator
         scaler.matchWidthOrHeight = 0.5f;
 
         CreateOverlay(root.transform, whiteSprite);
-        CreatePortrait(root.transform, whiteSprite, "LeftPortrait", new Color(0.83f, 0.46f, 0.46f, 0.95f), new Vector2(52f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), "LeftPortraitLabel", font);
-        CreatePortrait(root.transform, whiteSprite, "RightPortrait", new Color(0.46f, 0.63f, 0.87f, 0.95f), new Vector2(-52f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), "RightPortraitLabel", font);
-        CreateDialogueBox(root.transform, whiteSprite, font);
+        CreatePortrait(root.transform, whiteSprite, "LeftPortrait", new Color(0.83f, 0.46f, 0.46f, 0.95f), new Vector2(52f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), new Vector2(0f, 0f), "LeftPortraitLabel", tmpFont);
+        CreatePortrait(root.transform, whiteSprite, "RightPortrait", new Color(0.46f, 0.63f, 0.87f, 0.95f), new Vector2(-52f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), new Vector2(1f, 0f), "RightPortraitLabel", tmpFont);
+        CreateDialogueBox(root.transform, whiteSprite, tmpFont);
 
         PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
         Object.DestroyImmediate(root);
         AssetDatabase.SaveAssets();
         AssetDatabase.Refresh();
         Debug.Log($"Generated dialogue prefab at {PrefabPath}");
+    }
+
+    [MenuItem("Tools/Dialogue/Upgrade Existing Dialogue Prefab To TMP")]
+    public static void UpgradeExistingPrefabToTmp()
+    {
+        if (!File.Exists(PrefabPath)) return;
+
+        TMP_FontAsset tmpFont = LoadDefaultTmpFont();
+        if (tmpFont == null)
+        {
+            Debug.LogError("TMP default font asset not found. Cannot upgrade dialogue prefab.");
+            return;
+        }
+
+        GameObject root = PrefabUtility.LoadPrefabContents(PrefabPath);
+        try
+        {
+            ConvertLegacyTextToTmp(root.transform.Find("LeftPortrait/LeftPortraitLabel"), tmpFont, false);
+            ConvertLegacyTextToTmp(root.transform.Find("RightPortrait/RightPortraitLabel"), tmpFont, false);
+            ConvertLegacyTextToTmp(root.transform.Find("DialogueBox/SpeakerName"), tmpFont, false);
+            ConvertLegacyTextToTmp(root.transform.Find("DialogueBox/DialogueContent"), tmpFont, true);
+
+            PrefabUtility.SaveAsPrefabAsset(root, PrefabPath);
+            Debug.Log($"Upgraded dialogue prefab text components to TMP at {PrefabPath}");
+        }
+        finally
+        {
+            PrefabUtility.UnloadPrefabContents(root);
+            AssetDatabase.SaveAssets();
+            AssetDatabase.Refresh();
+        }
     }
 
     [InitializeOnLoadMethod]
@@ -58,7 +91,11 @@ public static class DialoguePrefabGenerator
     private static void TryAutoGeneratePrefab()
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode) return;
-        if (File.Exists(PrefabPath) && File.Exists(WhiteTexturePath)) return;
+        if (File.Exists(PrefabPath) && File.Exists(WhiteTexturePath))
+        {
+            UpgradeExistingPrefabToTmp();
+            return;
+        }
 
         GeneratePrefabAsset();
     }
@@ -90,7 +127,7 @@ public static class DialoguePrefabGenerator
         Vector2 anchorMax,
         Vector2 pivot,
         string labelName,
-        Font font)
+        TMP_FontAsset font)
     {
         GameObject portraitObject = new GameObject(objectName, typeof(RectTransform), typeof(Image));
         portraitObject.transform.SetParent(parent, false);
@@ -108,7 +145,7 @@ public static class DialoguePrefabGenerator
         image.color = color;
         image.raycastTarget = false;
 
-        GameObject labelObject = new GameObject(labelName, typeof(RectTransform), typeof(Text));
+        GameObject labelObject = new GameObject(labelName, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
         labelObject.transform.SetParent(portraitObject.transform, false);
 
         RectTransform labelRect = labelObject.GetComponent<RectTransform>();
@@ -117,18 +154,19 @@ public static class DialoguePrefabGenerator
         labelRect.offsetMin = new Vector2(24f, 24f);
         labelRect.offsetMax = new Vector2(-24f, -24f);
 
-        Text label = labelObject.GetComponent<Text>();
+        TextMeshProUGUI label = labelObject.GetComponent<TextMeshProUGUI>();
         label.font = font;
-        label.fontSize = 34;
-        label.alignment = TextAnchor.MiddleCenter;
+        label.fontSize = 34f;
+        label.alignment = TextAlignmentOptions.Center;
         label.color = Color.white;
         label.text = objectName.Contains("Left") ? "Left" : "Right";
-        label.supportRichText = true;
-        label.horizontalOverflow = HorizontalWrapMode.Wrap;
-        label.verticalOverflow = VerticalWrapMode.Overflow;
+        label.richText = true;
+        label.enableWordWrapping = true;
+        label.overflowMode = TextOverflowModes.Overflow;
+        label.raycastTarget = false;
     }
 
-    private static void CreateDialogueBox(Transform parent, Sprite sprite, Font font)
+    private static void CreateDialogueBox(Transform parent, Sprite sprite, TMP_FontAsset font)
     {
         GameObject boxObject = new GameObject("DialogueBox", typeof(RectTransform), typeof(Image));
         boxObject.transform.SetParent(parent, false);
@@ -154,8 +192,8 @@ public static class DialoguePrefabGenerator
     private static void CreateText(
         Transform parent,
         string objectName,
-        Font font,
-        int fontSize,
+        TMP_FontAsset font,
+        float fontSize,
         Color color,
         TextAnchor anchor,
         Vector2 anchorMin,
@@ -165,7 +203,7 @@ public static class DialoguePrefabGenerator
         Vector2 offsetMax,
         string textValue)
     {
-        GameObject textObject = new GameObject(objectName, typeof(RectTransform), typeof(Text));
+        GameObject textObject = new GameObject(objectName, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
         textObject.transform.SetParent(parent, false);
 
         RectTransform rect = textObject.GetComponent<RectTransform>();
@@ -175,15 +213,113 @@ public static class DialoguePrefabGenerator
         rect.offsetMin = offsetMin;
         rect.offsetMax = offsetMax;
 
-        Text text = textObject.GetComponent<Text>();
+        TextMeshProUGUI text = textObject.GetComponent<TextMeshProUGUI>();
         text.font = font;
         text.fontSize = fontSize;
-        text.alignment = anchor;
+        text.alignment = ConvertAlignment(anchor);
         text.color = color;
         text.text = textValue;
-        text.supportRichText = true;
-        text.horizontalOverflow = HorizontalWrapMode.Wrap;
-        text.verticalOverflow = VerticalWrapMode.Overflow;
+        text.richText = true;
+        text.enableWordWrapping = true;
+        text.overflowMode = TextOverflowModes.Overflow;
+        text.raycastTarget = false;
+
+        if (objectName == "DialogueContent")
+        {
+            TMP_LinkAnimator animator = textObject.GetComponent<TMP_LinkAnimator>();
+            if (animator == null)
+            {
+                animator = textObject.AddComponent<TMP_LinkAnimator>();
+            }
+
+            animator.BindText(text);
+        }
+    }
+
+    private static void ConvertLegacyTextToTmp(Transform target, TMP_FontAsset font, bool addLinkAnimator)
+    {
+        if (target == null) return;
+
+        TextMeshProUGUI tmp = target.GetComponent<TextMeshProUGUI>();
+        if (tmp == null)
+        {
+            Text legacy = target.GetComponent<Text>();
+            if (legacy == null) return;
+
+            string textValue = legacy.text;
+            int fontSize = legacy.fontSize;
+            Color color = legacy.color;
+            bool raycastTarget = legacy.raycastTarget;
+            TextAlignmentOptions alignment = ConvertAlignment(legacy.alignment);
+            bool wordWrap = legacy.horizontalOverflow != HorizontalWrapMode.Overflow;
+            TextOverflowModes overflow = legacy.verticalOverflow == VerticalWrapMode.Overflow
+                ? TextOverflowModes.Overflow
+                : TextOverflowModes.Truncate;
+
+            Object.DestroyImmediate(legacy, true);
+            tmp = target.gameObject.AddComponent<TextMeshProUGUI>();
+            tmp.text = textValue;
+            tmp.fontSize = fontSize;
+            tmp.color = color;
+            tmp.raycastTarget = raycastTarget;
+            tmp.alignment = alignment;
+            tmp.enableWordWrapping = wordWrap;
+            tmp.overflowMode = overflow;
+        }
+
+        tmp.font = font;
+        tmp.richText = true;
+        tmp.enableWordWrapping = true;
+        tmp.overflowMode = TextOverflowModes.Overflow;
+
+        TMP_LinkAnimator existingAnimator = target.GetComponent<TMP_LinkAnimator>();
+        if (addLinkAnimator)
+        {
+            if (existingAnimator == null)
+            {
+                existingAnimator = target.gameObject.AddComponent<TMP_LinkAnimator>();
+            }
+
+            existingAnimator.BindText(tmp);
+        }
+        else if (existingAnimator != null)
+        {
+            Object.DestroyImmediate(existingAnimator, true);
+        }
+    }
+
+    private static TMP_FontAsset LoadDefaultTmpFont()
+    {
+        TMP_FontAsset font = TMP_Settings.defaultFontAsset;
+        if (font != null) return font;
+        return AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(DefaultTmpFontPath);
+    }
+
+    private static TextAlignmentOptions ConvertAlignment(TextAnchor anchor)
+    {
+        switch (anchor)
+        {
+            case TextAnchor.UpperLeft:
+                return TextAlignmentOptions.TopLeft;
+            case TextAnchor.UpperCenter:
+                return TextAlignmentOptions.Top;
+            case TextAnchor.UpperRight:
+                return TextAlignmentOptions.TopRight;
+            case TextAnchor.MiddleLeft:
+                return TextAlignmentOptions.Left;
+            case TextAnchor.MiddleCenter:
+                return TextAlignmentOptions.Center;
+            case TextAnchor.MiddleRight:
+                return TextAlignmentOptions.Right;
+            case TextAnchor.LowerLeft:
+                return TextAlignmentOptions.BottomLeft;
+            case TextAnchor.LowerCenter:
+                return TextAlignmentOptions.Bottom;
+            case TextAnchor.LowerRight:
+                return TextAlignmentOptions.BottomRight;
+            default:
+                return TextAlignmentOptions.TopLeft;
+        }
     }
 
     private static Sprite EnsureWhiteSprite()
