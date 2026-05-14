@@ -62,14 +62,11 @@ public class PlayerController : MonoBehaviour
         sceneFlowManager.ReloadCurrentLevel();
     }
 
-    void Update()
+    void FixedUpdate()
     {
         // 落地检测
         isGrounded = Physics2D.OverlapCapsule(groundCheck.position, checkCapsuleSize, capsuleDirection, 0f, groundLayer);
-    }
 
-    void FixedUpdate()
-    {
         if (GameplayInputBlocker.IsBlocked)
         {
             moveInput = Vector2.zero;
