@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using TMPro;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using UnityEngine.SceneManagement;
@@ -45,10 +46,11 @@ public class SimpleSceneDialogueController : MonoBehaviour
     private RectTransform rightPortraitRect;
     private Image leftPortraitImage;
     private Image rightPortraitImage;
-    private Text leftPortraitLabel;
-    private Text rightPortraitLabel;
-    private Text speakerNameText;
-    private Text dialogueContentText;
+    private GameObject dialogueBoxObject;
+    private TMP_Text leftPortraitLabel;
+    private TMP_Text rightPortraitLabel;
+    private TMP_Text speakerNameText;
+    private TMP_Text dialogueContentText;
     private Color leftPortraitBaseColor;
     private Color rightPortraitBaseColor;
 
@@ -108,20 +110,20 @@ public class SimpleSceneDialogueController : MonoBehaviour
 
     private void BuildUi()
     {
-        Font fallbackFont = Resources.GetBuiltinResource<Font>("LegacyRuntime.ttf");
-        if (TryBuildUiFromPrefab(fallbackFont))
+        TMP_FontAsset fallbackTmpFont = LoadFallbackTmpFont();
+        if (TryBuildUiFromPrefab(fallbackTmpFont))
         {
             LayoutPortraitsFromCurrentPlacement();
             CachePortraitBaseColors();
             return;
         }
 
-        BuildFallbackRuntimeUi(fallbackFont);
+        BuildFallbackRuntimeUi(fallbackTmpFont);
         LayoutPortraitsFromCurrentPlacement();
         CachePortraitBaseColors();
     }
 
-    private bool TryBuildUiFromPrefab(Font fallbackFont)
+    private bool TryBuildUiFromPrefab(TMP_FontAsset fallbackTmpFont)
     {
         GameObject prefab = Resources.Load<GameObject>("Dialogue/SimpleSceneDialogueCanvas");
         if (prefab == null) return false;
@@ -132,8 +134,10 @@ public class SimpleSceneDialogueController : MonoBehaviour
         canvas = instance.GetComponent<Canvas>();
         leftPortraitImage = RequireChildComponent<Image>(instance.transform, "LeftPortrait");
         rightPortraitImage = RequireChildComponent<Image>(instance.transform, "RightPortrait");
-        speakerNameText = RequireChildComponent<Text>(instance.transform, "DialogueBox/SpeakerName");
-        dialogueContentText = RequireChildComponent<Text>(instance.transform, "DialogueBox/DialogueContent");
+        dialogueBoxObject = instance.transform.Find("DialogueBox")?.gameObject;
+        speakerNameText = EnsureTmpTextComponent(instance.transform.Find("DialogueBox/SpeakerName"), fallbackTmpFont, "TMPText", false);
+        Transform dialogueContentTransform = instance.transform.Find("DialogueBox/DialogueContent");
+        dialogueContentText = EnsureDialogueContentText(dialogueContentTransform, fallbackTmpFont);
 
         if (canvas == null || leftPortraitImage == null || rightPortraitImage == null || speakerNameText == null || dialogueContentText == null)
         {
@@ -144,25 +148,25 @@ public class SimpleSceneDialogueController : MonoBehaviour
 
         leftPortraitRect = leftPortraitImage.rectTransform;
         rightPortraitRect = rightPortraitImage.rectTransform;
-        leftPortraitLabel = TryGetChildComponent<Text>(instance.transform, "LeftPortrait/LeftPortraitLabel");
-        rightPortraitLabel = TryGetChildComponent<Text>(instance.transform, "RightPortrait/RightPortraitLabel");
+        leftPortraitLabel = EnsureTmpTextComponent(instance.transform.Find("LeftPortrait/LeftPortraitLabel"), fallbackTmpFont, "TMPText", false);
+        rightPortraitLabel = EnsureTmpTextComponent(instance.transform.Find("RightPortrait/RightPortraitLabel"), fallbackTmpFont, "TMPText", false);
 
         canvas.enabled = false;
 
         EnsureImageHasSprite(leftPortraitImage);
         EnsureImageHasSprite(rightPortraitImage);
-        EnsureTextHasFont(speakerNameText, fallbackFont);
-        EnsureTextHasFont(dialogueContentText, fallbackFont);
+        EnsureTmpTextHasFont(speakerNameText, fallbackTmpFont);
+        EnsureTmpTextHasFont(dialogueContentText, fallbackTmpFont);
+        ResetDialogueText();
+        SetDialogueBoxVisible(false);
 
         if (leftPortraitLabel != null)
         {
-            EnsureTextHasFont(leftPortraitLabel, fallbackFont);
             leftPortraitLabel.text = dialogueData.leftSpeakerName;
         }
 
         if (rightPortraitLabel != null)
         {
-            EnsureTextHasFont(rightPortraitLabel, fallbackFont);
             rightPortraitLabel.text = dialogueData.rightSpeakerName;
         }
 
@@ -170,7 +174,7 @@ public class SimpleSceneDialogueController : MonoBehaviour
         return true;
     }
 
-    private void BuildFallbackRuntimeUi(Font font)
+    private void BuildFallbackRuntimeUi(TMP_FontAsset fallbackTmpFont)
     {
         Sprite defaultSprite = GetFallbackUiSprite();
 
@@ -207,11 +211,12 @@ public class SimpleSceneDialogueController : MonoBehaviour
         overlayImage.type = Image.Type.Simple;
         overlayImage.color = new Color(0.65f, 0.65f, 0.65f, 0.35f);
 
-        leftPortraitImage = CreatePortrait("LeftPortrait", canvasObject.transform, defaultSprite, new Color(0.83f, 0.46f, 0.46f, 0.95f), out leftPortraitRect, out leftPortraitLabel, font, dialogueData.leftSpeakerName);
-        rightPortraitImage = CreatePortrait("RightPortrait", canvasObject.transform, defaultSprite, new Color(0.46f, 0.63f, 0.87f, 0.95f), out rightPortraitRect, out rightPortraitLabel, font, dialogueData.rightSpeakerName);
+        leftPortraitImage = CreatePortrait("LeftPortrait", canvasObject.transform, defaultSprite, new Color(0.83f, 0.46f, 0.46f, 0.95f), out leftPortraitRect, out leftPortraitLabel, fallbackTmpFont, dialogueData.leftSpeakerName);
+        rightPortraitImage = CreatePortrait("RightPortrait", canvasObject.transform, defaultSprite, new Color(0.46f, 0.63f, 0.87f, 0.95f), out rightPortraitRect, out rightPortraitLabel, fallbackTmpFont, dialogueData.rightSpeakerName);
 
         GameObject boxObject = new GameObject("DialogueBox", typeof(RectTransform), typeof(Image));
         boxObject.transform.SetParent(canvasObject.transform, false);
+        dialogueBoxObject = boxObject;
 
         RectTransform boxRect = boxObject.GetComponent<RectTransform>();
         boxRect.anchorMin = new Vector2(0f, 0f);
@@ -225,7 +230,7 @@ public class SimpleSceneDialogueController : MonoBehaviour
         boxImage.type = Image.Type.Simple;
         boxImage.color = new Color(0f, 0f, 0f, 0.78f);
 
-        speakerNameText = CreateText("SpeakerName", boxObject.transform, font, 28, TextAnchor.UpperLeft, new Color(1f, 0.94f, 0.72f, 1f));
+        speakerNameText = CreateTmpText("SpeakerName", boxObject.transform, fallbackTmpFont, 28f, TextAlignmentOptions.TopLeft, new Color(1f, 0.94f, 0.72f, 1f), false);
         RectTransform speakerRect = speakerNameText.rectTransform;
         speakerRect.anchorMin = new Vector2(0f, 1f);
         speakerRect.anchorMax = new Vector2(1f, 1f);
@@ -233,12 +238,14 @@ public class SimpleSceneDialogueController : MonoBehaviour
         speakerRect.offsetMin = new Vector2(32f, -56f);
         speakerRect.offsetMax = new Vector2(-32f, -12f);
 
-        dialogueContentText = CreateText("DialogueContent", boxObject.transform, font, 36, TextAnchor.UpperLeft, Color.white);
+        dialogueContentText = CreateTmpText("DialogueContent", boxObject.transform, fallbackTmpFont, 36f, TextAlignmentOptions.TopLeft, Color.white, true);
         RectTransform contentRect = dialogueContentText.rectTransform;
         contentRect.anchorMin = new Vector2(0f, 0f);
         contentRect.anchorMax = new Vector2(1f, 1f);
         contentRect.offsetMin = new Vector2(32f, 24f);
         contentRect.offsetMax = new Vector2(-32f, -64f);
+        ResetDialogueText();
+        SetDialogueBoxVisible(false);
 
         leftPortraitRect.anchorMin = new Vector2(0f, 0f);
         leftPortraitRect.anchorMax = new Vector2(0f, 0f);
@@ -255,23 +262,28 @@ public class SimpleSceneDialogueController : MonoBehaviour
         ApplyPortraitAssets();
     }
 
-    private static Text CreateText(string name, Transform parent, Font font, int fontSize, TextAnchor anchor, Color color)
+    private TMP_Text CreateTmpText(string name, Transform parent, TMP_FontAsset font, float fontSize, TextAlignmentOptions alignment, Color color, bool addLinkAnimator)
     {
-        GameObject textObject = new GameObject(name, typeof(RectTransform), typeof(Text));
+        GameObject textObject = new GameObject(name, typeof(RectTransform), typeof(TextMeshProUGUI));
         textObject.transform.SetParent(parent, false);
 
-        Text text = textObject.GetComponent<Text>();
+        TextMeshProUGUI text = textObject.GetComponent<TextMeshProUGUI>();
         text.font = font;
         text.fontSize = fontSize;
-        text.alignment = anchor;
+        text.alignment = alignment;
         text.color = color;
-        text.supportRichText = true;
-        text.horizontalOverflow = HorizontalWrapMode.Wrap;
-        text.verticalOverflow = VerticalWrapMode.Overflow;
+        text.richText = true;
+        text.enableWordWrapping = true;
+        text.overflowMode = TextOverflowModes.Overflow;
+        text.raycastTarget = false;
+        if (addLinkAnimator)
+        {
+            EnsureDialogueAnimator(text);
+        }
         return text;
     }
 
-    private Image CreatePortrait(string objectName, Transform parent, Sprite defaultSprite, Color fallbackColor, out RectTransform portraitRect, out Text label, Font font, string labelText)
+    private Image CreatePortrait(string objectName, Transform parent, Sprite defaultSprite, Color fallbackColor, out RectTransform portraitRect, out TMP_Text label, TMP_FontAsset font, string labelText)
     {
         GameObject portraitObject = new GameObject(objectName, typeof(RectTransform), typeof(Image));
         portraitObject.transform.SetParent(parent, false);
@@ -283,7 +295,7 @@ public class SimpleSceneDialogueController : MonoBehaviour
         portraitImage.color = fallbackColor;
         portraitImage.raycastTarget = false;
 
-        label = CreateText(objectName + "Label", portraitObject.transform, font, 34, TextAnchor.MiddleCenter, Color.white);
+        label = CreateTmpText(objectName + "Label", portraitObject.transform, font, 34f, TextAlignmentOptions.Center, Color.white, false);
         RectTransform labelRect = label.rectTransform;
         labelRect.anchorMin = Vector2.zero;
         labelRect.anchorMax = Vector2.one;
@@ -292,6 +304,80 @@ public class SimpleSceneDialogueController : MonoBehaviour
         label.text = labelText;
 
         return portraitImage;
+    }
+
+    private TMP_Text EnsureDialogueContentText(Transform target, TMP_FontAsset fallbackTmpFont)
+    {
+        TMP_Text tmpText = EnsureTmpTextComponent(target, fallbackTmpFont, "TMPContent", true);
+        if (tmpText == null) return null;
+
+        EnsureTmpTextHasFont(tmpText, fallbackTmpFont);
+        tmpText.richText = true;
+        tmpText.overflowMode = TextOverflowModes.Overflow;
+        tmpText.enableWordWrapping = true;
+        EnsureDialogueAnimator(tmpText);
+        return tmpText;
+    }
+
+    private TMP_Text EnsureTmpTextComponent(Transform target, TMP_FontAsset fallbackTmpFont, string replacementChildName, bool addLinkAnimator)
+    {
+        if (target == null) return null;
+
+        TMP_Text tmpText = target.GetComponent<TMP_Text>();
+        if (tmpText == null)
+        {
+            Text legacyText = target.GetComponent<Text>();
+            Transform upgradedTransform = target.Find(replacementChildName);
+            TextMeshProUGUI upgradedText = upgradedTransform != null
+                ? upgradedTransform.GetComponent<TextMeshProUGUI>()
+                : null;
+
+            if (upgradedText == null)
+            {
+                GameObject upgradedObject = new GameObject(replacementChildName, typeof(RectTransform), typeof(CanvasRenderer), typeof(TextMeshProUGUI));
+                RectTransform upgradedRect = upgradedObject.GetComponent<RectTransform>();
+                upgradedRect.SetParent(target, false);
+                upgradedRect.anchorMin = Vector2.zero;
+                upgradedRect.anchorMax = Vector2.one;
+                upgradedRect.offsetMin = Vector2.zero;
+                upgradedRect.offsetMax = Vector2.zero;
+                upgradedRect.pivot = new Vector2(0.5f, 0.5f);
+                upgradedText = upgradedObject.GetComponent<TextMeshProUGUI>();
+            }
+
+            if (legacyText != null)
+            {
+                upgradedText.text = legacyText.text;
+                upgradedText.fontSize = legacyText.fontSize;
+                upgradedText.color = legacyText.color;
+                upgradedText.raycastTarget = legacyText.raycastTarget;
+                upgradedText.richText = legacyText.supportRichText;
+                upgradedText.enableWordWrapping = legacyText.horizontalOverflow != HorizontalWrapMode.Overflow;
+                upgradedText.overflowMode = legacyText.verticalOverflow == VerticalWrapMode.Overflow
+                    ? TextOverflowModes.Overflow
+                    : TextOverflowModes.Truncate;
+                upgradedText.alignment = ConvertAlignment(legacyText.alignment);
+                legacyText.raycastTarget = false;
+                legacyText.enabled = false;
+            }
+            else
+            {
+                upgradedText.text = string.Empty;
+            }
+
+            tmpText = upgradedText;
+        }
+
+        EnsureTmpTextHasFont(tmpText, fallbackTmpFont);
+        tmpText.richText = true;
+        tmpText.overflowMode = TextOverflowModes.Overflow;
+        tmpText.enableWordWrapping = true;
+        if (addLinkAnimator)
+        {
+            EnsureDialogueAnimator(tmpText);
+        }
+
+        return tmpText;
     }
 
     private void ApplyPortraitAssets()
@@ -384,6 +470,12 @@ public class SimpleSceneDialogueController : MonoBehaviour
         return fallbackUiSprite;
     }
 
+    private static TMP_FontAsset LoadFallbackTmpFont()
+    {
+        if (TMP_Settings.defaultFontAsset != null) return TMP_Settings.defaultFontAsset;
+        return Resources.Load<TMP_FontAsset>("Fonts & Materials/LiberationSans SDF");
+    }
+
     private static void EnsureImageHasSprite(Image image)
     {
         if (image == null || image.sprite != null) return;
@@ -391,10 +483,50 @@ public class SimpleSceneDialogueController : MonoBehaviour
         image.type = Image.Type.Simple;
     }
 
-    private static void EnsureTextHasFont(Text text, Font fallbackFont)
+    private static void EnsureTmpTextHasFont(TMP_Text text, TMP_FontAsset fallbackFont)
     {
-        if (text == null || text.font != null) return;
+        if (text == null || text.font != null || fallbackFont == null) return;
         text.font = fallbackFont;
+    }
+
+    private static void EnsureDialogueAnimator(TMP_Text text)
+    {
+        if (text == null) return;
+
+        TMP_LinkAnimator animator = text.GetComponent<TMP_LinkAnimator>();
+        if (animator == null)
+        {
+            animator = text.gameObject.AddComponent<TMP_LinkAnimator>();
+        }
+
+        animator.BindText(text);
+    }
+
+    private static TextAlignmentOptions ConvertAlignment(TextAnchor anchor)
+    {
+        switch (anchor)
+        {
+            case TextAnchor.UpperLeft:
+                return TextAlignmentOptions.TopLeft;
+            case TextAnchor.UpperCenter:
+                return TextAlignmentOptions.Top;
+            case TextAnchor.UpperRight:
+                return TextAlignmentOptions.TopRight;
+            case TextAnchor.MiddleLeft:
+                return TextAlignmentOptions.Left;
+            case TextAnchor.MiddleCenter:
+                return TextAlignmentOptions.Center;
+            case TextAnchor.MiddleRight:
+                return TextAlignmentOptions.Right;
+            case TextAnchor.LowerLeft:
+                return TextAlignmentOptions.BottomLeft;
+            case TextAnchor.LowerCenter:
+                return TextAlignmentOptions.Bottom;
+            case TextAnchor.LowerRight:
+                return TextAlignmentOptions.BottomRight;
+            default:
+                return TextAlignmentOptions.TopLeft;
+        }
     }
 
     private static T RequireChildComponent<T>(Transform root, string relativePath) where T : Component
@@ -407,6 +539,28 @@ public class SimpleSceneDialogueController : MonoBehaviour
     {
         Transform target = root.Find(relativePath);
         return target != null ? target.GetComponent<T>() : null;
+    }
+
+    private void ResetDialogueText()
+    {
+        if (speakerNameText != null)
+        {
+            speakerNameText.text = string.Empty;
+        }
+
+        if (dialogueContentText != null)
+        {
+            dialogueContentText.text = string.Empty;
+            dialogueContentText.maxVisibleCharacters = 0;
+        }
+    }
+
+    private void SetDialogueBoxVisible(bool isVisible)
+    {
+        if (dialogueBoxObject != null)
+        {
+            dialogueBoxObject.SetActive(isVisible);
+        }
     }
 
     private IEnumerator RunDialogueSequence()
@@ -428,6 +582,7 @@ public class SimpleSceneDialogueController : MonoBehaviour
             yield break;
         }
 
+        SetDialogueBoxVisible(true);
         isDialogueReady = true;
         ShowNextLine();
     }
@@ -482,11 +637,16 @@ public class SimpleSceneDialogueController : MonoBehaviour
     private IEnumerator TypeLine(string fullText)
     {
         isTyping = true;
-        dialogueContentText.text = string.Empty;
+        dialogueContentText.text = fullText ?? string.Empty;
+        dialogueContentText.maxVisibleCharacters = 0;
+        dialogueContentText.ForceMeshUpdate();
 
-        if (string.IsNullOrEmpty(fullText))
+        int totalCharacters = dialogueContentText.textInfo.characterCount;
+
+        if (totalCharacters <= 0)
         {
             isTyping = false;
+            typingCoroutine = null;
             yield break;
         }
 
@@ -494,20 +654,20 @@ public class SimpleSceneDialogueController : MonoBehaviour
         float interval = 1f / dialogueData.typewriterCharactersPerSecond;
         int visibleCharacters = 0;
 
-        while (visibleCharacters < fullText.Length)
+        while (visibleCharacters < totalCharacters)
         {
             timer += Time.unscaledDeltaTime;
-            while (timer >= interval && visibleCharacters < fullText.Length)
+            while (timer >= interval && visibleCharacters < totalCharacters)
             {
                 visibleCharacters++;
                 timer -= interval;
             }
 
-            dialogueContentText.text = fullText.Substring(0, visibleCharacters);
+            dialogueContentText.maxVisibleCharacters = visibleCharacters;
             yield return null;
         }
 
-        dialogueContentText.text = fullText;
+        dialogueContentText.maxVisibleCharacters = int.MaxValue;
         isTyping = false;
         typingCoroutine = null;
     }
@@ -521,6 +681,7 @@ public class SimpleSceneDialogueController : MonoBehaviour
         }
 
         dialogueContentText.text = currentFullLine;
+        dialogueContentText.maxVisibleCharacters = int.MaxValue;
         isTyping = false;
     }
 
@@ -552,10 +713,27 @@ public class SimpleSceneDialogueController : MonoBehaviour
 
 public static class SimpleSceneDialogueBootstrap
 {
-    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.AfterSceneLoad)]
-    private static void SpawnDialogueForScene()
+    private static bool isRegistered;
+
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.BeforeSceneLoad)]
+    private static void RegisterSceneLoadHook()
     {
-        string sceneName = SceneManager.GetActiveScene().name;
+        if (isRegistered) return;
+
+        SceneManager.sceneLoaded -= OnSceneLoaded;
+        SceneManager.sceneLoaded += OnSceneLoaded;
+        isRegistered = true;
+    }
+
+    private static void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        SpawnDialogueForScene(scene.name);
+    }
+
+    private static void SpawnDialogueForScene(string sceneName)
+    {
+        if (UnityEngine.Object.FindObjectOfType<SimpleSceneDialogueController>() != null) return;
+
         TextAsset dialogueAsset = Resources.Load<TextAsset>($"Dialogue/{sceneName}");
         if (dialogueAsset == null) return;
 

@@ -6,6 +6,12 @@ public static class GameplayInputBlocker
 
     public static bool IsBlocked => blockCount > 0;
 
+    [RuntimeInitializeOnLoadMethod(RuntimeInitializeLoadType.SubsystemRegistration)]
+    private static void ResetState()
+    {
+        blockCount = 0;
+    }
+
     public static void AcquireBlock()
     {
         blockCount++;

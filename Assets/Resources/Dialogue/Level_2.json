@@ -1,0 +1,39 @@
+{
+  "leftSpeakerName": "sister",
+  "rightSpeakerName": "brother",
+  "leftPortraitResourcePath": "",
+  "rightPortraitResourcePath": "",
+  "introDelaySeconds": 1.0,
+  "typewriterCharactersPerSecond": 30.0,
+  "portraitSlideDuration": 0.45,
+  "lines": [
+    {
+      "speaker": 1,
+      "text": "等等，前面的路被杂物<link=\"shake\">堵死了</link>。常规方法过不去。"
+    },
+    {
+      "speaker": 0,
+      "text": "啊？那怎么办，我们没带铲子或者撬棍。"
+    },
+    {
+      "speaker": 1,
+      "text": "正好试一试我们的<link=\"shake\">1号</link>，1号能把心灵世界直接映射到现实，扭曲这片地形，硬生生铺出一条路或者削掉地形。<br> <color=#FFD54F><b>捡到1号后点Q键切换，然后鼠标左键使用，可以蓄力调节大小</b></color>。"
+    },
+    {
+      "speaker": 0,
+      "text": "为什么我们自己的发明还要我们去捡啊"
+    },
+    {
+      "speaker": 1,
+      "text": "这你得去问问设计师了"
+    },
+    {
+      "speaker": 0,
+      "text": "我要是<color=#FF5A5A>丢错地方</color>了怎么办"
+    },
+    {
+      "speaker": 1,
+      "text": "用E键可以收回所有投掷出的1号，<color=#FFD54F><b>要是投错地方了就用E键收回吧</b></color>"
+    }
+  ]
+}

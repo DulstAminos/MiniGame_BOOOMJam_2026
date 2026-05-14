@@ -7,18 +7,21 @@ public class PlayableArea : MonoBehaviour
 
     private void OnTriggerExit2D(Collider2D other)
     {
-        if (other.CompareTag("Player"))
-        {
-            // 检查状态，防止通关后转场期间触发死亡
-            if (GameManager.Instance.CurrentState != GameState.Playing) return;
+        if (!Application.isPlaying || other == null || !other.CompareTag("Player")) return;
 
-            Debug.Log("玩家离开游玩区域，视为死亡！");
+        GameManager gameManager = GameManager.Instance;
+        SceneFlowManager sceneFlowManager = SceneFlowManager.Instance;
+        if (gameManager == null || sceneFlowManager == null) return;
 
-            // 防止连按或重复触发导致多次加载
-            GameManager.Instance.ChangeState(GameState.Transitioning);
+        // 检查状态，防止通关后转场期间触发死亡
+        if (gameManager.CurrentState != GameState.Playing) return;
 
-            // 调用在阶段一写好的统一重置方法
-            SceneFlowManager.Instance.ReloadCurrentLevel(deathDelay);
-        }
+        Debug.Log("玩家离开游玩区域，视为死亡！");
+
+        // 防止连按或重复触发导致多次加载
+        gameManager.ChangeState(GameState.Transitioning);
+
+        // 调用在阶段一写好的统一重置方法
+        sceneFlowManager.ReloadCurrentLevel(deathDelay);
     }
 }

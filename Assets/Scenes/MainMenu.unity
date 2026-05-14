@@ -130,6 +130,18 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 5185609157372111789, guid: af7ec47c2ebf2194b8f77e83020848cd, type: 3}
+      propertyPath: levels.Array.size
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5185609157372111789, guid: af7ec47c2ebf2194b8f77e83020848cd, type: 3}
+      propertyPath: levels.Array.data[4].levelName
+      value: Level 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 5185609157372111789, guid: af7ec47c2ebf2194b8f77e83020848cd, type: 3}
+      propertyPath: levels.Array.data[4].sceneName
+      value: Level_5
+      objectReference: {fileID: 0}
     - target: {fileID: 5703349800650537604, guid: af7ec47c2ebf2194b8f77e83020848cd, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
