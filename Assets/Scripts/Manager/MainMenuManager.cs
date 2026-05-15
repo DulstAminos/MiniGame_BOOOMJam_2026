@@ -34,6 +34,7 @@ public class MainMenuManager : MonoBehaviour
     public GameObject creditsPanel;
     public GameObject levelSelectPanel;
     public GameObject darkOverlay;
+    public Image backgroundImage;
 
     [Header("Level Select References")]
     public Transform levelGrid;
@@ -58,6 +59,12 @@ public class MainMenuManager : MonoBehaviour
     public float levelSelectFadeDuration = 0.4f;
     public float creditsFadeDuration = 0.38f;
 
+    [Header("Transition Curve")]
+    public AnimationCurve fadeCurve = CreateRecommendedFadeCurve();
+
+    [Header("Background Blur")]
+    public float panelBlurStrength = 2.2f;
+
     [Header("Level Button Layout")]
     public LevelButtonLayout[] levelButtonLayouts = CreateDefaultLevelButtonLayouts();
 
@@ -72,17 +79,21 @@ public class MainMenuManager : MonoBehaviour
     private CanvasGroup startPanelGroup;
     private CanvasGroup creditsPanelGroup;
     private CanvasGroup levelSelectPanelGroup;
+    private Material backgroundBlurMaterialInstance;
+    private float currentBackgroundBlur;
 
     private void OnValidate()
     {
         EnsureLayoutArrayLength();
         EnsureFixedButtonArrayLength();
+        EnsureFadeCurve();
     }
 
     private void Start()
     {
         EnsureLayoutArrayLength();
         EnsureFixedButtonArrayLength();
+        EnsureFadeCurve();
         CacheSceneReferences();
         InitializeCanvasGroups();
         EnsureCreditsBackButton();
@@ -111,6 +122,15 @@ public class MainMenuManager : MonoBehaviour
         isAnimating = false;
     }
 
+    private void OnDestroy()
+    {
+        if (backgroundBlurMaterialInstance != null)
+        {
+            Destroy(backgroundBlurMaterialInstance);
+            backgroundBlurMaterialInstance = null;
+        }
+    }
+
     private void HandleEscKey()
     {
         if (currentState == MenuState.Credits)
@@ -127,24 +147,28 @@ public class MainMenuManager : MonoBehaviour
     {
         if (startBtn != null)
         {
+            PrepareButtonVisualTransition(startBtn);
             startBtn.onClick.RemoveAllListeners();
             startBtn.onClick.AddListener(OpenLevelSelect);
         }
 
         if (creditsBtn != null)
         {
+            PrepareButtonVisualTransition(creditsBtn);
             creditsBtn.onClick.RemoveAllListeners();
             creditsBtn.onClick.AddListener(OpenCredits);
         }
 
         if (quitBtn != null)
         {
+            PrepareButtonVisualTransition(quitBtn);
             quitBtn.onClick.RemoveAllListeners();
             quitBtn.onClick.AddListener(QuitGame);
         }
 
         if (resetSaveButton != null)
         {
+            PrepareButtonVisualTransition(resetSaveButton);
             resetSaveButton.onClick.RemoveAllListeners();
             resetSaveButton.onClick.AddListener(ResetSave);
         }
@@ -156,6 +180,7 @@ public class MainMenuManager : MonoBehaviour
         if (creditsPanel == null) creditsPanel = transform.Find("CreditsPanel")?.gameObject;
         if (levelSelectPanel == null) levelSelectPanel = transform.Find("LevelSelectPanel")?.gameObject;
         if (darkOverlay == null) darkOverlay = transform.Find("DarkOverlay")?.gameObject;
+        if (backgroundImage == null) backgroundImage = transform.Find("BackgroundImage")?.GetComponent<Image>();
 
         if (levelGrid == null && levelSelectPanel != null)
         {
@@ -222,6 +247,8 @@ public class MainMenuManager : MonoBehaviour
         {
             levelSelectPanelGroup = GetOrAddCanvasGroup(levelSelectPanel);
         }
+
+        InitializeBackgroundBlur();
     }
 
     private void InitializeMenuState()
@@ -231,16 +258,18 @@ public class MainMenuManager : MonoBehaviour
             GameManager.Instance.ChangeState(GameState.MainMenu);
         }
 
-        SetStartPanelVisuals(1f, 1f, true);
-        SetPanelCanvasState(startPanelGroup, 1f, true, true);
         SetPanelActive(startPanel, true);
+        SetPanelActive(creditsPanel, true);
+        SetPanelActive(levelSelectPanel, true);
 
+        SetStartPanelVisuals(1f, 1f, true);
+        SetStartButtonsVisible(true);
+        SetPanelCanvasState(startPanelGroup, 1f, true, true);
+        SetCreditsBackButtonVisible(false);
         SetPanelCanvasState(creditsPanelGroup, 0f, false, false);
-        SetPanelActive(creditsPanel, false);
 
         RefreshLevelButtons();
         SetPanelCanvasState(levelSelectPanelGroup, 0f, false, false);
-        SetPanelActive(levelSelectPanel, false);
 
         if (darkOverlay != null)
         {
@@ -297,9 +326,10 @@ public class MainMenuManager : MonoBehaviour
 
     private IEnumerator TransitionStartToLevelSelect()
     {
+        float totalDuration = GetCombinedTransitionDuration(levelSelectFadeDuration);
+        StartCoroutine(AnimateBackgroundBlur(currentBackgroundBlur, panelBlurStrength, totalDuration));
         yield return FadeStartPanelOut();
 
-        SetPanelActive(startPanel, false);
         if (darkOverlay != null) darkOverlay.SetActive(false);
 
         RefreshLevelButtons();
@@ -309,8 +339,9 @@ public class MainMenuManager : MonoBehaviour
 
     private IEnumerator TransitionLevelSelectToStart()
     {
+        float totalDuration = GetCombinedTransitionDuration(levelSelectFadeDuration);
+        StartCoroutine(AnimateBackgroundBlur(currentBackgroundBlur, 0f, totalDuration));
         yield return FadePanelOut(levelSelectPanel, levelSelectPanelGroup, levelSelectFadeDuration);
-        SetPanelActive(levelSelectPanel, false);
 
         if (darkOverlay != null) darkOverlay.SetActive(true);
 
@@ -320,19 +351,21 @@ public class MainMenuManager : MonoBehaviour
 
     private IEnumerator TransitionStartToCredits()
     {
+        float totalDuration = GetCombinedTransitionDuration(creditsFadeDuration);
+        StartCoroutine(AnimateBackgroundBlur(currentBackgroundBlur, panelBlurStrength, totalDuration));
         yield return FadeStartPanelOut();
 
-        SetPanelActive(startPanel, false);
         if (darkOverlay != null) darkOverlay.SetActive(true);
 
-        yield return FadePanelIn(creditsPanel, creditsPanelGroup, creditsFadeDuration);
+        yield return FadeCreditsPanelIn();
         currentState = MenuState.Credits;
     }
 
     private IEnumerator TransitionCreditsToStart()
     {
-        yield return FadePanelOut(creditsPanel, creditsPanelGroup, creditsFadeDuration);
-        SetPanelActive(creditsPanel, false);
+        float totalDuration = GetCombinedTransitionDuration(creditsFadeDuration);
+        StartCoroutine(AnimateBackgroundBlur(currentBackgroundBlur, 0f, totalDuration));
+        yield return FadeCreditsPanelOut();
 
         if (darkOverlay != null) darkOverlay.SetActive(true);
 
@@ -344,7 +377,8 @@ public class MainMenuManager : MonoBehaviour
     {
         SetPanelActive(startPanel, true);
         SetPanelCanvasState(startPanelGroup, 1f, false, false);
-        yield return FadeStartElements(1f, 0f, 1f, 0f);
+        SetStartButtonsVisible(false);
+        yield return FadeStartTitle(1f, 0f);
         SetStartPanelVisuals(0f, 0f, false);
         SetPanelCanvasState(startPanelGroup, 0f, false, false);
     }
@@ -353,38 +387,48 @@ public class MainMenuManager : MonoBehaviour
     {
         SetPanelActive(startPanel, true);
         SetStartPanelVisuals(0f, 0f, true);
+        SetStartButtonsVisible(false);
         SetPanelCanvasState(startPanelGroup, 1f, false, false);
-        yield return FadeStartElements(0f, 1f, 0f, 1f);
+        PrepareUiForReveal(startPanel);
+        yield return null;
+        yield return FadeStartTitle(0f, 1f);
         SetStartPanelVisuals(1f, 1f, true);
+        SetStartButtonsVisible(true);
         SetPanelCanvasState(startPanelGroup, 1f, true, true);
     }
 
-    private IEnumerator FadeStartElements(float titleFrom, float titleTo, float buttonsFrom, float buttonsTo)
+    private IEnumerator FadeStartTitle(float from, float to)
     {
-        float maxDuration = Mathf.Max(0.0001f, Mathf.Max(startTitleFadeDuration, startButtonGroupFadeDuration));
+        float duration = Mathf.Max(0.0001f, startTitleFadeDuration);
         float elapsed = 0f;
 
-        while (elapsed < maxDuration)
+        while (elapsed < duration)
         {
             elapsed += Time.unscaledDeltaTime;
 
             if (startTitleGroup != null)
             {
-                float titleProgress = Mathf.Clamp01(elapsed / Mathf.Max(0.0001f, startTitleFadeDuration));
-                startTitleGroup.alpha = Mathf.LerpUnclamped(titleFrom, titleTo, titleProgress);
-            }
-
-            if (startButtonGroupGroup != null)
-            {
-                float buttonProgress = Mathf.Clamp01(elapsed / Mathf.Max(0.0001f, startButtonGroupFadeDuration));
-                startButtonGroupGroup.alpha = Mathf.LerpUnclamped(buttonsFrom, buttonsTo, buttonProgress);
+                float progress = Mathf.Clamp01(elapsed / duration);
+                startTitleGroup.alpha = Mathf.LerpUnclamped(from, to, EvaluateFadeCurve(progress));
             }
 
             yield return null;
         }
 
-        if (startTitleGroup != null) startTitleGroup.alpha = titleTo;
-        if (startButtonGroupGroup != null) startButtonGroupGroup.alpha = buttonsTo;
+        if (startTitleGroup != null) startTitleGroup.alpha = to;
+    }
+
+    private IEnumerator FadeCreditsPanelIn()
+    {
+        SetCreditsBackButtonVisible(false);
+        yield return FadePanelIn(creditsPanel, creditsPanelGroup, creditsFadeDuration);
+        SetCreditsBackButtonVisible(true);
+    }
+
+    private IEnumerator FadeCreditsPanelOut()
+    {
+        SetCreditsBackButtonVisible(false);
+        yield return FadePanelOut(creditsPanel, creditsPanelGroup, creditsFadeDuration);
     }
 
     private IEnumerator FadePanelIn(GameObject panel, CanvasGroup canvasGroup, float duration)
@@ -393,6 +437,8 @@ public class MainMenuManager : MonoBehaviour
 
         SetPanelActive(panel, true);
         SetPanelCanvasState(canvasGroup, 0f, false, false);
+        PrepareUiForReveal(panel);
+        yield return null;
         yield return FadeCanvasGroup(canvasGroup, 0f, 1f, duration);
         SetPanelCanvasState(canvasGroup, 1f, true, true);
     }
@@ -422,11 +468,86 @@ public class MainMenuManager : MonoBehaviour
         {
             elapsed += Time.unscaledDeltaTime;
             float t = Mathf.Clamp01(elapsed / duration);
-            canvasGroup.alpha = Mathf.LerpUnclamped(from, to, t);
+            canvasGroup.alpha = Mathf.LerpUnclamped(from, to, EvaluateFadeCurve(t));
             yield return null;
         }
 
         canvasGroup.alpha = to;
+    }
+
+    private void InitializeBackgroundBlur()
+    {
+        if (backgroundImage == null) return;
+
+        Shader blurShader = Resources.Load<Shader>("Shaders/UIGaussianBlurSprite");
+        if (blurShader == null)
+        {
+            Debug.LogWarning("Background blur shader not found at Resources/Shaders/UIGaussianBlurSprite.");
+            return;
+        }
+
+        backgroundBlurMaterialInstance = new Material(blurShader)
+        {
+            name = "MainMenuBackgroundBlur (Runtime)"
+        };
+        backgroundImage.material = backgroundBlurMaterialInstance;
+        SetBackgroundBlur(0f);
+    }
+
+    private IEnumerator AnimateBackgroundBlur(float from, float to, float duration)
+    {
+        if (backgroundBlurMaterialInstance == null)
+        {
+            currentBackgroundBlur = to;
+            yield break;
+        }
+
+        if (duration <= 0f)
+        {
+            SetBackgroundBlur(to);
+            yield break;
+        }
+
+        float elapsed = 0f;
+        while (elapsed < duration)
+        {
+            elapsed += Time.unscaledDeltaTime;
+            float t = Mathf.Clamp01(elapsed / duration);
+            SetBackgroundBlur(Mathf.LerpUnclamped(from, to, EvaluateFadeCurve(t)));
+            yield return null;
+        }
+
+        SetBackgroundBlur(to);
+    }
+
+    private void SetBackgroundBlur(float blurValue)
+    {
+        currentBackgroundBlur = Mathf.Max(0f, blurValue);
+
+        if (backgroundBlurMaterialInstance == null) return;
+        backgroundBlurMaterialInstance.SetFloat("_BlurSize", currentBackgroundBlur);
+    }
+
+    private static void PrepareUiForReveal(GameObject panel)
+    {
+        if (panel == null) return;
+
+        RectTransform rect = panel.transform as RectTransform;
+        if (rect != null)
+        {
+            LayoutRebuilder.ForceRebuildLayoutImmediate(rect);
+        }
+
+        TMP_Text[] texts = panel.GetComponentsInChildren<TMP_Text>(true);
+        for (int i = 0; i < texts.Length; i++)
+        {
+            if (texts[i] != null)
+            {
+                texts[i].ForceMeshUpdate();
+            }
+        }
+
+        Canvas.ForceUpdateCanvases();
     }
 
     private void EnsureFixedLevelButtons()
@@ -461,6 +582,8 @@ public class MainMenuManager : MonoBehaviour
             {
                 ApplyLevelButtonLayout(fixedLevelButtons[i], i);
             }
+
+            PrepareButtonVisualTransition(fixedLevelButtons[i]);
         }
     }
 
@@ -608,6 +731,7 @@ public class MainMenuManager : MonoBehaviour
         }
 
         creditsBackButton.gameObject.SetActive(true);
+        PrepareButtonVisualTransition(creditsBackButton);
         creditsBackButton.onClick.RemoveAllListeners();
         creditsBackButton.onClick.AddListener(() =>
         {
@@ -620,10 +744,33 @@ public class MainMenuManager : MonoBehaviour
 
     private void SetStartPanelVisuals(float titleAlpha, float buttonAlpha, bool visible)
     {
-        if (startTitleObject != null) startTitleObject.SetActive(visible);
-        if (startButtonGroupObject != null) startButtonGroupObject.SetActive(visible);
+        if (visible)
+        {
+            if (startTitleObject != null) startTitleObject.SetActive(true);
+        }
+        else
+        {
+            if (startTitleObject != null) startTitleObject.SetActive(false);
+        }
+
         if (startTitleGroup != null) startTitleGroup.alpha = titleAlpha;
         if (startButtonGroupGroup != null) startButtonGroupGroup.alpha = buttonAlpha;
+    }
+
+    private void SetStartButtonsVisible(bool visible)
+    {
+        if (startButtonGroupObject != null)
+        {
+            startButtonGroupObject.SetActive(visible);
+        }
+    }
+
+    private void SetCreditsBackButtonVisible(bool visible)
+    {
+        if (creditsBackButton != null)
+        {
+            creditsBackButton.gameObject.SetActive(visible);
+        }
     }
 
     private static void SetPanelActive(GameObject panel, bool isActive)
@@ -631,6 +778,21 @@ public class MainMenuManager : MonoBehaviour
         if (panel != null)
         {
             panel.SetActive(isActive);
+        }
+    }
+
+    private static void PrepareButtonVisualTransition(Button button)
+    {
+        if (button == null) return;
+
+        ColorBlock colors = button.colors;
+        colors.fadeDuration = 0f;
+        button.colors = colors;
+
+        if (button.targetGraphic != null)
+        {
+            button.targetGraphic.CrossFadeColor(colors.normalColor, 0f, true, true);
+            button.targetGraphic.canvasRenderer.SetAlpha(colors.normalColor.a);
         }
     }
 
@@ -691,9 +853,33 @@ public class MainMenuManager : MonoBehaviour
         }
     }
 
+    private void EnsureFadeCurve()
+    {
+        if (fadeCurve == null || fadeCurve.length == 0)
+        {
+            fadeCurve = CreateRecommendedFadeCurve();
+        }
+    }
+
+    private float GetCombinedTransitionDuration(float targetPanelDuration)
+    {
+        return Mathf.Max(0.0001f, startTitleFadeDuration + targetPanelDuration);
+    }
+
+    private float EvaluateFadeCurve(float t)
+    {
+        if (fadeCurve == null || fadeCurve.length == 0) return t;
+        return fadeCurve.Evaluate(Mathf.Clamp01(t));
+    }
+
     private static string GetLevelButtonName(int index)
     {
         return $"Button_Level{index + 1}";
+    }
+
+    private static AnimationCurve CreateRecommendedFadeCurve()
+    {
+        return AnimationCurve.EaseInOut(0f, 0f, 1f, 1f);
     }
 
     private static LevelButtonLayout[] CreateDefaultLevelButtonLayouts()
