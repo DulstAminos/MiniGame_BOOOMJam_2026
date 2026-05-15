@@ -10,17 +10,20 @@ public class ItemPickup : MonoBehaviour
     [Tooltip("拾取后增加的数量")]
     public int giveAmount = 1;
 
+    bool isPicked = false;
+
     // 当有物体进入此触发器时自动调用
     private void OnTriggerEnter2D(Collider2D collision)
     {
         // 判断是否是标签为 "Player" 的物体碰到了它
-        if (collision.CompareTag("Player"))
+        if (collision.CompareTag("Player") && !isPicked)
         {
             // 尝试获取玩家身上的 InventoryManager 组件
             InventoryManager inventory = collision.GetComponent<InventoryManager>();
 
             if (inventory != null)
             {
+                isPicked = true;
                 // 增加道具数量
                 inventory.ModifyItemCount(itemTypeToGive, giveAmount);
 
