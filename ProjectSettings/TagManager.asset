@@ -42,3 +42,27 @@ TagManager:
   - name: Default
     uniqueID: 0
     locked: 0
+  - name: Background
+    uniqueID: 183037709
+    locked: 0
+  - name: World_Back
+    uniqueID: 2479581419
+    locked: 0
+  - name: World_Front
+    uniqueID: 2113850095
+    locked: 0
+  - name: Shared_Objects
+    uniqueID: 4271976325
+    locked: 0
+  - name: ItemAndMasks
+    uniqueID: 3805011693
+    locked: 0
+  - name: Foreground
+    uniqueID: 3829644069
+    locked: 0
+  - name: UI
+    uniqueID: 2128116645
+    locked: 0
+  - name: Transition
+    uniqueID: 1472663409
+    locked: 0

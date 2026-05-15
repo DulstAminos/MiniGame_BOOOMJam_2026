@@ -1,0 +1,31 @@
+{
+  "leftSpeakerName": "sister",
+  "rightSpeakerName": "brother",
+  "leftPortraitResourcePath": "",
+  "rightPortraitResourcePath": "",
+  "introDelaySeconds": 1.0,
+  "typewriterCharactersPerSecond": 30.0,
+  "portraitSlideDuration": 0.45,
+  "lines": [
+    {
+      "speaker": 0,
+      "text": "通往门的道路都损坏了，没路过去啦。"
+    },
+    {
+      "speaker": 1,
+      "text": "心灵世界记录着这个工厂原本的样子，或许在另一边的世界有路可以过去。"
+    },
+    {
+      "speaker": 1,
+      "text": "这时候该试试我们的2号了，2号可以放置一个传送门，让我们短暂到达心灵世界。现实与心灵是一对双生的视界，它们同时诞生，又相互影响。"
+    },
+    {
+      "speaker": 1,
+      "text": "但是这种连接很不稳定，<color=#FFD54F><b>最多可以维持3秒</b></color>，之后会被迫回到我们原来的世界，道具也会恢复"
+    },
+    {
+      "speaker": 0,
+      "text": "<link=\"wave\">知道啦</link>，<color=#FFD54F><b>没路的时候就去心灵世界看看</b></color>"
+    }
+  ]
+}

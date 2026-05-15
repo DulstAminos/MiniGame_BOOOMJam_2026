@@ -26,16 +26,36 @@ public class PlayerController : MonoBehaviour
     // 对应 Action Map 里的 Move
     public void OnMove(InputValue value)
     {
+        if (GameplayInputBlocker.IsBlocked || GameManager.Instance.CurrentState != GameState.Playing)
+        {
+            moveInput = Vector2.zero;
+            return;
+        }
+
         moveInput = value.Get<Vector2>();
     }
 
     // 对应 Action Map 里的 Jump
     public void OnJump(InputValue value)
     {
+        if (GameplayInputBlocker.IsBlocked || GameManager.Instance.CurrentState != GameState.Playing) return;
+
         if (value.isPressed && isGrounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
         }
+    }
+
+    // 对应 Action Map 里的 Reset
+    public void OnReset(InputValue value)
+    {
+        GameManager gameManager = GameManager.Instance;
+        SceneFlowManager sceneFlowManager = SceneFlowManager.Instance;
+        if (!value.isPressed || GameplayInputBlocker.IsBlocked || gameManager == null || sceneFlowManager == null) return;
+        if (gameManager.CurrentState != GameState.Playing) return;
+
+        gameManager.ChangeState(GameState.Transitioning);
+        sceneFlowManager.ReloadCurrentLevel();
     }
 
     void Update()
@@ -46,6 +66,13 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (GameplayInputBlocker.IsBlocked)
+        {
+            moveInput = Vector2.zero;
+            rb.velocity = new Vector2(0f, rb.velocity.y);
+            return;
+        }
+
         // 左右移动（直接修改速度）
         rb.velocity = new Vector2(moveInput.x * moveSpeed, rb.velocity.y);
     }
