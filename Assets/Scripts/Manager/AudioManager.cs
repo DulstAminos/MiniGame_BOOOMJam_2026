@@ -16,7 +16,8 @@ public class AudioManager : MonoSingleton<AudioManager>
     public AudioClip gameplayBackBGM;  // 里世界音乐
 
     [Header("BGM Transition Settings")]
-    public float bgmCrossfadeDuration = 0.5f; // 切换世界时声音淡入淡出的时间
+    [Tooltip("音乐淡入淡出所需的时间(秒)")]
+    public float bgmFadeDuration = 0.5f;
 
     [Header("SFX Clips")]
     public AudioClip uiClickClip;
@@ -27,7 +28,12 @@ public class AudioManager : MonoSingleton<AudioManager>
     public AudioClip explodeClip_Portal;
     public AudioClip transitionClip;
 
-    private Coroutine crossfadeCoroutine;
+    // BGM 状态机变量
+    private AudioClip pendingFrontClip;
+    private AudioClip pendingBackClip;
+    private bool isSwitchingClips; // 标记是否正在“换歌”阶段
+    private float targetFrontVol = 0f;
+    private float targetBackVol = 0f;
 
     protected override void Awake()
     {
@@ -71,6 +77,43 @@ public class AudioManager : MonoSingleton<AudioManager>
         SceneManager.sceneLoaded -= OnSceneLoadedForBGM;
     }
 
+    private void Update()
+    {
+        // 计算每秒音量改变的速度（防除零错误）
+        float fadeSpeed = (bgmFadeDuration > 0.01f) ? (1f / bgmFadeDuration) : 100f;
+
+        if (isSwitchingClips)
+        {
+            // 旧音乐淡出。
+            bgmFrontSource.volume = Mathf.MoveTowards(bgmFrontSource.volume, 0f, fadeSpeed * Time.unscaledDeltaTime);
+            bgmBackSource.volume = Mathf.MoveTowards(bgmBackSource.volume, 0f, fadeSpeed * Time.unscaledDeltaTime);
+
+            // 当两轨音量都完全降为0时，瞬间切换歌曲
+            if (bgmFrontSource.volume <= 0f && bgmBackSource.volume <= 0f)
+            {
+                bgmFrontSource.clip = pendingFrontClip;
+                bgmBackSource.clip = pendingBackClip;
+
+                // 播放新曲
+                if (pendingFrontClip != null)
+                    bgmFrontSource.Play();
+                else bgmFrontSource.Stop();
+                if (pendingBackClip != null)
+                    bgmBackSource.Play();
+                else bgmBackSource.Stop();
+
+                // 结束换歌阶段，进入下一帧的淡入阶段
+                isSwitchingClips = false;
+            }
+        }
+        else
+        {
+            // 向目标音量平滑过渡
+            bgmFrontSource.volume = Mathf.MoveTowards(bgmFrontSource.volume, targetFrontVol, fadeSpeed * Time.unscaledDeltaTime);
+            bgmBackSource.volume = Mathf.MoveTowards(bgmBackSource.volume, targetBackVol, fadeSpeed * Time.unscaledDeltaTime);
+        }
+    }
+
     // --- BGM 管理 ---
     private void OnSceneLoadedForBGM(Scene scene, LoadSceneMode mode)
     {
@@ -86,85 +129,50 @@ public class AudioManager : MonoSingleton<AudioManager>
 
     private void PlayMainMenuBGM()
     {
-        // 如果当前已经在放主菜单音乐，直接返回
-        if (bgmFrontSource.clip == mainMenuBGM) return;
-
-        bgmBackSource.Stop(); // 停掉里世界音乐
-        bgmBackSource.clip = null;
-
-        bgmFrontSource.clip = mainMenuBGM;
-        bgmFrontSource.volume = 1f;
-        bgmFrontSource.loop = true;
-        bgmFrontSource.Play();
+        targetFrontVol = 1f;
+        targetBackVol = 0f;
+        ChangeBGMClips(mainMenuBGM, null);
     }
 
     private void PlayGameplayBGM()
     {
-        // 跨场景无缝播放检测：如果已经是游戏内BGM，直接返回
-        if (bgmFrontSource.clip == gameplayFrontBGM && bgmBackSource.clip == gameplayBackBGM)
-        {
+        // 初始化目标为0，真正正确的音量将由紧接着 LevelWorldManager 触发的 OnWorldSwitch 事件分配
+        targetFrontVol = 0f;
+        targetBackVol = 0f;
+        ChangeBGMClips(gameplayFrontBGM, gameplayBackBGM);
+    }
+
+    private void ChangeBGMClips(AudioClip front, AudioClip back)
+    {
+        // 如果下一首要放的歌和现在正在放的歌一样，直接 return
+        if (bgmFrontSource.clip == front && bgmBackSource.clip == back && !isSwitchingClips)
             return;
+
+        pendingFrontClip = front;
+        pendingBackClip = back;
+        isSwitchingClips = true;
+
+        // 如果目前系统并没有在播放声音，强行把音量设为0，跳过淡出，直接进入淡入状态。
+        if (!bgmFrontSource.isPlaying && !bgmBackSource.isPlaying)
+        {
+            bgmFrontSource.volume = 0f;
+            bgmBackSource.volume = 0f;
         }
-
-        // 设置剪辑
-        bgmFrontSource.clip = gameplayFrontBGM;
-        bgmBackSource.clip = gameplayBackBGM;
-
-        // 设置循环
-        bgmFrontSource.loop = true;
-        bgmBackSource.loop = true;
-
-        // 初始音量设为 0
-        bgmFrontSource.volume = 0f;
-        bgmBackSource.volume = 0f;
-
-        // 同时调用Play，确保双轨时间轴绝对对齐
-        bgmFrontSource.Play();
-        bgmBackSource.Play();
     }
 
     private void OnWorldSwitched(object sender, EventArgs e)
     {
-        // 如果当前不在游戏关卡状态（比如没在放游戏BGM），不处理
-        if (bgmFrontSource.clip != gameplayFrontBGM) return;
-
-        // 转换事件参数
         if (e is WorldSwitchEventArgs args)
         {
-            WorldType activeWorld = args.NewWorld;
-
-            float targetFrontVol = (activeWorld == WorldType.Front) ? 1f : 0f;
-            float targetBackVol = (activeWorld == WorldType.Back) ? 1f : 0f;
-
-            if (crossfadeCoroutine != null)
+            // 只有在游玩关卡时才响应事件
+            if (pendingFrontClip == gameplayFrontBGM || bgmFrontSource.clip == gameplayFrontBGM)
             {
-                StopCoroutine(crossfadeCoroutine);
+                WorldType activeWorld = args.NewWorld;
+
+                targetFrontVol = (activeWorld == WorldType.Front) ? 1f : 0f;
+                targetBackVol = (activeWorld == WorldType.Back) ? 1f : 0f;
             }
-            crossfadeCoroutine = StartCoroutine(CrossfadeBGM(targetFrontVol, targetBackVol));
         }
-    }
-
-    // 利用协程实现平滑过渡音量，不会生硬地卡顿
-    private IEnumerator CrossfadeBGM(float targetFrontVol, float targetBackVol)
-    {
-        float startFrontVol = bgmFrontSource.volume;
-        float startBackVol = bgmBackSource.volume;
-        float timer = 0f;
-
-        while (timer < bgmCrossfadeDuration)
-        {
-            // 即使在暂停(TimeScale=0)或者转场时，也能保证淡入淡出正常运作
-            timer += Time.unscaledDeltaTime;
-            float percent = timer / bgmCrossfadeDuration;
-
-            bgmFrontSource.volume = Mathf.Lerp(startFrontVol, targetFrontVol, percent);
-            bgmBackSource.volume = Mathf.Lerp(startBackVol, targetBackVol, percent);
-
-            yield return null;
-        }
-
-        bgmFrontSource.volume = targetFrontVol;
-        bgmBackSource.volume = targetBackVol;
     }
 
     // --- SFX 播放方法 ---
