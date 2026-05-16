@@ -1,0 +1,23 @@
+{
+  "leftSpeakerName": "sister",
+  "rightSpeakerName": "brother",
+  "leftPortraitResourcePath": "",
+  "rightPortraitResourcePath": "",
+  "introDelaySeconds": 1.0,
+  "typewriterCharactersPerSecond": 30.0,
+  "portraitSlideDuration": 0.45,
+  "lines": [
+    {
+      "speaker": 1,
+      "text": "姐姐大人，你可能知道但是我还是要提醒一下，<link=\"wave\"><br> <color=#FFD54F><b>使用W键和空格键可以跳跃哦</b></color></link> 。"
+    },
+    {
+      "speaker": 0,
+      "text": "这种事情三岁小孩都知道啦。W移动……不对，是<color=#FFD54F><b>W键跳跃</b></color>"
+    },
+    {
+      "speaker": 1,
+      "text": "这里的旧地板随时可能塌陷，管道裂缝也得靠跳跃跨过去。既然你记得，那就走吧，小心脚下。"
+    }
+  ]
+}

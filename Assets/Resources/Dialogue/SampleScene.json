@@ -1,0 +1,23 @@
+{
+  "leftSpeakerName": "Explorer",
+  "rightSpeakerName": "Guide",
+  "leftPortraitResourcePath": "",
+  "rightPortraitResourcePath": "",
+  "introDelaySeconds": 1.0,
+  "typewriterCharactersPerSecond": 30.0,
+  "portraitSlideDuration": 0.45,
+  "lines": [
+    {
+      "speaker": 0,
+      "text": "This is a simple dialogue demo scene."
+    },
+    {
+      "speaker": 1,
+      "text": "Click the mouse to advance one line at a time."
+    },
+    {
+      "speaker": 0,
+      "text": "When the script is over, gameplay control will be restored."
+    }
+  ]
+}

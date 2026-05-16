@@ -1,0 +1,31 @@
+{
+  "leftSpeakerName": "sister",
+  "rightSpeakerName": "brother",
+  "leftPortraitResourcePath": "",
+  "rightPortraitResourcePath": "",
+  "introDelaySeconds": 1.0,
+  "typewriterCharactersPerSecond": 30.0,
+  "portraitSlideDuration": 0.45,
+  "lines": [
+    {
+      "speaker": 0,
+      "text": "<link=\"wave\">哇——我们真的溜进来了</link>，这废弃工厂比想象中还酷"
+    },
+    {
+      "speaker": 1,
+      "text": "安静点，姐姐。巡逻的安保虽然撤了，但旧管道随时可能塌。别忘了正事。"
+    },
+    {
+      "speaker": 0,
+      "text": "<link=\"wave\">\"要找一个足够大的封闭空间，完整测试我们的发明\"</link> 对吧，我可没那么笨"
+    },
+    {
+      "speaker": 1,
+      "text": "这个工厂完美满足我们的要求。接下来的每一个房间，目标都只有一个：<color=#FFD54F><b>找到并进入通往下一个房间的门，使用A键和D键移动</b></color>。就这么简单，准备好了吗？"
+    },
+    {
+      "speaker": 0,
+      "text": "准备好了！"
+    }
+  ]
+}
