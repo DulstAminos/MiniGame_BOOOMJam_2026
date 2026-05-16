@@ -114,7 +114,7 @@ public class ItemProjectile : MonoBehaviour
         }
 
         // 区域生成完毕，触发爆炸音效
-        this.TriggerEvent(EventName.OnBombExplode);
+        this.TriggerEvent(itemType == ItemType.PartialZone ? EventName.OnBombExplode_PartialZone : EventName.OnBombExplode_Portal);
 
         // 区域生成完毕，销毁投掷物自身
         Destroy(gameObject);

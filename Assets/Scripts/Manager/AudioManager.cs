@@ -17,7 +17,8 @@ public class AudioManager : MonoSingleton<AudioManager>
     public AudioClip jumpClip;
     public AudioClip landClip;
     public AudioClip throwClip;
-    public AudioClip explodeClip;
+    public AudioClip explodeClip_PartialZone;
+    public AudioClip explodeClip_Portal;
     public AudioClip transitionClip;
 
     protected override void Awake()
@@ -34,7 +35,8 @@ public class AudioManager : MonoSingleton<AudioManager>
         EventManager.Instance.AddListener(EventName.OnPlayerJump, PlayJumpSFX);
         EventManager.Instance.AddListener(EventName.OnPlayerLand, PlayLandSFX);
         EventManager.Instance.AddListener(EventName.OnPlayerThrow, PlayThrowSFX);
-        EventManager.Instance.AddListener(EventName.OnBombExplode, PlayExplodeSFX);
+        EventManager.Instance.AddListener(EventName.OnBombExplode_PartialZone, PlayExplodeSFX_PartialZone);
+        EventManager.Instance.AddListener(EventName.OnBombExplode_Portal, PlayExplodeSFX_Portal);
         EventManager.Instance.AddListener(EventName.OnTransitionStart, PlayTransitionSFX);
         EventManager.Instance.AddListener(EventName.OnUIClick, PlayUIClickSFX);
 
@@ -48,7 +50,8 @@ public class AudioManager : MonoSingleton<AudioManager>
         EventManager.Instance.RemoveListener(EventName.OnPlayerJump, PlayJumpSFX);
         EventManager.Instance.RemoveListener(EventName.OnPlayerLand, PlayLandSFX);
         EventManager.Instance.RemoveListener(EventName.OnPlayerThrow, PlayThrowSFX);
-        EventManager.Instance.RemoveListener(EventName.OnBombExplode, PlayExplodeSFX);
+        EventManager.Instance.RemoveListener(EventName.OnBombExplode_PartialZone, PlayExplodeSFX_PartialZone);
+        EventManager.Instance.RemoveListener(EventName.OnBombExplode_Portal, PlayExplodeSFX_Portal);
         EventManager.Instance.RemoveListener(EventName.OnTransitionStart, PlayTransitionSFX);
         EventManager.Instance.RemoveListener(EventName.OnUIClick, PlayUIClickSFX);
 
@@ -89,7 +92,8 @@ public class AudioManager : MonoSingleton<AudioManager>
     private void PlayJumpSFX(object sender, EventArgs e) => PlaySFX(jumpClip);
     private void PlayLandSFX(object sender, EventArgs e) => PlaySFX(landClip);
     private void PlayThrowSFX(object sender, EventArgs e) => PlaySFX(throwClip);
-    private void PlayExplodeSFX(object sender, EventArgs e) => PlaySFX(explodeClip);
+    private void PlayExplodeSFX_PartialZone(object sender, EventArgs e) => PlaySFX(explodeClip_PartialZone);
+    private void PlayExplodeSFX_Portal(object sender, EventArgs e) => PlaySFX(explodeClip_Portal);
     private void PlayTransitionSFX(object sender, EventArgs e) => PlaySFX(transitionClip);
     private void PlayUIClickSFX(object sender, EventArgs e) => PlaySFX(uiClickClip);
 }

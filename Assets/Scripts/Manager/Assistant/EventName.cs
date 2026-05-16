@@ -12,7 +12,8 @@ public static class EventName
     public const string OnPlayerThrow = nameof(OnPlayerThrow); // 玩家成功投掷道具时触发
     public const string OnPlayerJump = nameof(OnPlayerJump);
     public const string OnPlayerLand = nameof(OnPlayerLand);
-    public const string OnBombExplode = nameof(OnBombExplode);
+    public const string OnBombExplode_PartialZone = nameof(OnBombExplode_PartialZone);
+    public const string OnBombExplode_Portal = nameof(OnBombExplode_Portal);
     public const string OnTransitionStart = nameof(OnTransitionStart);
     public const string OnUIClick = nameof(OnUIClick);
 }
