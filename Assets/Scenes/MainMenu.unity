@@ -610,18 +610,6 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 4815071876710311002, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
-      propertyPath: mainMenuBGM
-      value: 
-      objectReference: {fileID: 8300000, guid: 2bb60acf15213884eadaf7ddad19f94d, type: 3}
-    - target: {fileID: 4815071876710311002, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
-      propertyPath: gameplayBackBGM
-      value: 
-      objectReference: {fileID: 8300000, guid: 00802b7947d7205468f3742c63fe180a, type: 3}
-    - target: {fileID: 4815071876710311002, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
-      propertyPath: gameplayFrontBGM
-      value: 
-      objectReference: {fileID: 8300000, guid: dc1fc248d88da834fbc78416023b4c05, type: 3}
     - target: {fileID: 7814222377657182051, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
       propertyPath: m_Name
       value: AudioManager

@@ -307,10 +307,10 @@ MonoBehaviour:
   bgmFrontSource: {fileID: 5904305635544307768}
   bgmBackSource: {fileID: 893630480689352877}
   sfxSource: {fileID: 8179771100218883977}
-  mainMenuBGM: {fileID: 0}
-  gameplayFrontBGM: {fileID: 0}
-  gameplayBackBGM: {fileID: 0}
-  bgmCrossfadeDuration: 0.5
+  mainMenuBGM: {fileID: 8300000, guid: 2bb60acf15213884eadaf7ddad19f94d, type: 3}
+  gameplayFrontBGM: {fileID: 8300000, guid: dc1fc248d88da834fbc78416023b4c05, type: 3}
+  gameplayBackBGM: {fileID: 8300000, guid: 00802b7947d7205468f3742c63fe180a, type: 3}
+  bgmFadeDuration: 0.5
   uiClickClip: {fileID: 8300000, guid: 8b827321ca0bcf1429d62a618d93f6db, type: 3}
   jumpClip: {fileID: 8300000, guid: 27c2c802580789246b6d6db4b521ad88, type: 3}
   landClip: {fileID: 8300000, guid: 57b1463bbfd30a74db845dfb4869f18f, type: 3}

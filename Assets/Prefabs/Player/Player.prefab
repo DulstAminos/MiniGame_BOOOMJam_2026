@@ -567,7 +567,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8365db9c70bae244fb83a08c1064068b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkClips: []
+  walkClips:
+  - {fileID: 8300000, guid: bd0ee4c11a80d084cbfe5976986edfc1, type: 3}
+  - {fileID: 8300000, guid: b03047d4fdf0afb4eb3815a2d9885d70, type: 3}
+  - {fileID: 8300000, guid: a199685287987124da80d79070a54d2f, type: 3}
+  - {fileID: 8300000, guid: ee4a29171bd50aa43b273feec1e24053, type: 3}
+  - {fileID: 8300000, guid: 63e2771c3fcec394296896a7eefcd071, type: 3}
+  - {fileID: 8300000, guid: f113c21e17a13544e904ec43d934c5b2, type: 3}
   walkStepInterval: 0.3
   walkVolume: 0.5
 --- !u!1 &4939557149368060196
