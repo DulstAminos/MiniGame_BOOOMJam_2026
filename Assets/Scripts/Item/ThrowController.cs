@@ -15,7 +15,8 @@ public class ThrowController : MonoBehaviour
     public float fixedPortalSize = 3f;
 
     [Header("Projectile Settings")]
-    public ItemProjectile projectilePrefab;
+    public ItemProjectile projectilePrefab_PartialZone;
+    public ItemProjectile projectilePrefab_Portal;
     public Transform throwPoint;
 
     [Header("Recall Settings")]
@@ -150,6 +151,8 @@ public class ThrowController : MonoBehaviour
 
         inventory.ModifyItemCount(itemType, -1);
         Vector2 targetPos = aimController.CurrentTargetPos;
+
+        ItemProjectile projectilePrefab = itemType == ItemType.PartialZone ? projectilePrefab_PartialZone : projectilePrefab_Portal;
 
         if (projectilePrefab != null)
         {
