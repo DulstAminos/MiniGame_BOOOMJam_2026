@@ -91,13 +91,19 @@ public static class DialoguePrefabGenerator
     private static void TryAutoGeneratePrefab()
     {
         if (EditorApplication.isPlayingOrWillChangePlaymode) return;
-        if (File.Exists(PrefabPath) && File.Exists(WhiteTexturePath))
+
+        if (!File.Exists(WhiteTexturePath))
         {
-            UpgradeExistingPrefabToTmp();
-            return;
+            EnsureFolder(ResourcesFolder);
+            EnsureFolder(DialogueFolder);
+            EnsureWhiteSprite();
+            AssetDatabase.SaveAssets();
         }
 
-        GeneratePrefabAsset();
+        if (!File.Exists(PrefabPath))
+        {
+            GeneratePrefabAsset();
+        }
     }
 
     private static void CreateOverlay(Transform parent, Sprite sprite)

@@ -5,11 +5,10 @@ public class LevelGoal : MonoBehaviour
 {
     [Header("通关设置")]
     public float winDelay = 0.5f; // 碰到终点后延迟多久进入下一关
-    public float velocityThreshold = 0.01f; // y方向速度的阈值（绝对值小于此值视为静止）
 
     private bool isTriggered = false;
 
-    private void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerStay2D(Collider2D other)
     {
         CheckGoal(other);
     }
@@ -20,15 +19,11 @@ public class LevelGoal : MonoBehaviour
         if (isTriggered || !other.CompareTag("Player")) return;
         if (GameManager.Instance.CurrentState != GameState.Playing) return;
 
-        // 2. 检查 y 方向速度
-        Rigidbody2D rb = other.GetComponent<Rigidbody2D>();
-        if (rb != null)
+        // 2. 检查玩家是否在地面上
+        PlayerController playerCtrl = other.GetComponent<PlayerController>();
+        if (playerCtrl != null && !playerCtrl.IsGrounded)
         {
-            // 如果 y 方向速度的绝对值大于阈值，说明正在跳跃或坠落，不触发
-            if (Mathf.Abs(rb.velocity.y) > velocityThreshold)
-            {
-                return;
-            }
+            return;
         }
 
         // 3. 符合条件，执行通关
