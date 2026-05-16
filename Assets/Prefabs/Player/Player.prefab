@@ -539,7 +539,8 @@ MonoBehaviour:
   maxSize: 2.5
   chargeSpeed: 4
   fixedPortalSize: 1
-  projectilePrefab: {fileID: 3472709773419438643, guid: 7eaeaa5511e45a845beee8dcb2c90f5f, type: 3}
+  projectilePrefab_PartialZone: {fileID: 3472709773419438643, guid: 9906de69928200d4c90cab7ed9fe4fd4, type: 3}
+  projectilePrefab_Portal: {fileID: 3472709773419438643, guid: 7eaeaa5511e45a845beee8dcb2c90f5f, type: 3}
   throwPoint: {fileID: 0}
   recallKey: 19
 --- !u!114 &5164867480055850517
@@ -566,8 +567,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8365db9c70bae244fb83a08c1064068b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  walkClip: {fileID: 0}
+  walkClips: []
   walkStepInterval: 0.3
+  walkVolume: 0.5
 --- !u!1 &4939557149368060196
 GameObject:
   m_ObjectHideFlags: 0
