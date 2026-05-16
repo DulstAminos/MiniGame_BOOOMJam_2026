@@ -311,12 +311,12 @@ MonoBehaviour:
   gameplayFrontBGM: {fileID: 0}
   gameplayBackBGM: {fileID: 0}
   bgmCrossfadeDuration: 0.5
-  uiClickClip: {fileID: 0}
-  jumpClip: {fileID: 0}
-  landClip: {fileID: 0}
-  throwClip: {fileID: 0}
-  explodeClip_PartialZone: {fileID: 0}
-  explodeClip_Portal: {fileID: 0}
+  uiClickClip: {fileID: 8300000, guid: 8b827321ca0bcf1429d62a618d93f6db, type: 3}
+  jumpClip: {fileID: 8300000, guid: 27c2c802580789246b6d6db4b521ad88, type: 3}
+  landClip: {fileID: 8300000, guid: 57b1463bbfd30a74db845dfb4869f18f, type: 3}
+  throwClip: {fileID: 8300000, guid: e09d449faa922f84483be6aaa98cbad8, type: 3}
+  explodeClip_PartialZone: {fileID: 8300000, guid: f3f4482c34527e341bea32a579b8d323, type: 3}
+  explodeClip_Portal: {fileID: 8300000, guid: 6820ca317598748478842c742c6376b4, type: 3}
   transitionClip: {fileID: 0}
 --- !u!114 &7444059402757595330
 MonoBehaviour:

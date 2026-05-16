@@ -738,6 +738,79 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!1001 &438880628
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 280905138230268037, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 280905138230268037, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 280905138230268037, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 90
+      objectReference: {fileID: 0}
+    - target: {fileID: 280905138230268037, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 280905138230268037, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 280905138230268037, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 280905138230268037, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 280905138230268037, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 280905138230268037, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 280905138230268037, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4815071876710311002, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
+      propertyPath: jumpClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 27c2c802580789246b6d6db4b521ad88, type: 3}
+    - target: {fileID: 4815071876710311002, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
+      propertyPath: landClip
+      value: 
+      objectReference: {fileID: 8300000, guid: 57b1463bbfd30a74db845dfb4869f18f, type: 3}
+    - target: {fileID: 4815071876710311002, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
+      propertyPath: throwClip
+      value: 
+      objectReference: {fileID: 8300000, guid: e09d449faa922f84483be6aaa98cbad8, type: 3}
+    - target: {fileID: 4815071876710311002, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
+      propertyPath: explodeClip_PartialZone
+      value: 
+      objectReference: {fileID: 8300000, guid: f3f4482c34527e341bea32a579b8d323, type: 3}
+    - target: {fileID: 7814222377657182051, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
+      propertyPath: m_Name
+      value: AudioManager
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 64abbcfb1339e4343b1c3f644641a028, type: 3}
 --- !u!1 &757765407
 GameObject:
   m_ObjectHideFlags: 0
@@ -1027,7 +1100,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!114 &926450250
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1092,7 +1165,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: -291914717, guid: c5b70648d6f898347a38f0fc82a6258e, type: 3}
+  m_Sprite: {fileID: -1899450937, guid: e49844af20c13f448903f6b5f7475757, type: 3}
   m_Type: 0
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -1468,7 +1541,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1106685391
 RectTransform:
   m_ObjectHideFlags: 0
@@ -2136,7 +2209,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1244350543
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3098,7 +3171,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &1987995361
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3532,3 +3605,4 @@ SceneRoots:
   - {fileID: 1080299090}
   - {fileID: 267018939}
   - {fileID: 25739509}
+  - {fileID: 438880628}
