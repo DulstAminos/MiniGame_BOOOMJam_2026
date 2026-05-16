@@ -486,7 +486,7 @@ MonoBehaviour:
   moveSpeed: 8
   jumpForce: 15
   groundCheck: {fileID: 1803977579738208860}
-  checkCapsuleSize: {x: 0.8, y: 0.2}
+  checkCapsuleSize: {x: 0.79, y: 0.2}
   capsuleDirection: 1
   groundLayer:
     serializedVersion: 2
