@@ -83,6 +83,9 @@ public class SceneFlowManager : MonoSingleton<SceneFlowManager>
         // 初始化位置
         UpdateTransitionPosition();
 
+        // 广播转场开始事件
+        this.TriggerEvent(EventName.OnTransitionStart);
+
         // 2. 转出动画 (圆圈收缩，画面变黑)
         float timer = 0f;
         while (timer < transitionDuration)

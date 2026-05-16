@@ -47,6 +47,7 @@ public class PlayerController : MonoBehaviour
         if (value.isPressed && isGrounded)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
+            this.TriggerEvent(EventName.OnPlayerJump);
         }
     }
 
