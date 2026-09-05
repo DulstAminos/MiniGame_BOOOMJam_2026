@@ -66,7 +66,7 @@
 
 ## 👥 开发团队 (Credits)
 - **程序 (Programmer)：** [Dulst] (GitHub: [@DulstAminos](https://github.com/DulstAminos))
-- **策划 (Game Designer)：** [时川]
+- **策划 (Game Designer)：** [时川](GitHub: [@CyberboyJ](https://github.com/CyberboyJ))
 - **美术 (Artists)：** [浅灰色太阳], [陷光星]
 
 感谢华中科技大学 MEMO 游戏工作室的平台支持。
